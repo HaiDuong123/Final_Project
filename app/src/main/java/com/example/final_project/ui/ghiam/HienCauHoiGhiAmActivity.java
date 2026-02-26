@@ -16,12 +16,12 @@ import androidx.core.content.ContextCompat;
 
 import com.example.final_project.R;
 import com.example.final_project.data.model.Question;
-import com.example.final_project.data.repository.QuestionRepository;
 import com.example.final_project.data.repository.SpeechRepository;
 
 import java.io.File;
 import java.io.FileWriter;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -51,7 +51,7 @@ public class HienCauHoiGhiAmActivity extends AppCompatActivity {
 
         initViews();
         checkPermission();
-        loadQuestions();
+        loadQuestions();   // ✅ local questions
 
         btnRecord.setOnClickListener(v -> toggleRecording());
         btnCauTiepTheo.setOnClickListener(v -> nextQuestion());
@@ -76,6 +76,26 @@ public class HienCauHoiGhiAmActivity extends AppCompatActivity {
         }
     }
 
+    // ================= LOCAL QUESTIONS =================
+    private void loadQuestions() {
+
+        questions = new ArrayList<>();
+
+        questions.add(new Question("Hôm nay bạn cảm thấy thế nào?", null));
+        questions.add(new Question("Bạn có ngủ ngon không?", null));
+        questions.add(new Question("Điều gì làm bạn vui nhất hôm nay?", null));
+        questions.add(new Question("Bạn có đang căng thẳng không?", null));
+        questions.add(new Question("Bạn mong muốn điều gì lúc này?", null));
+        questions.add(new Question("Bạn có thấy mệt mỏi không?", null));
+        questions.add(new Question("Bạn có muốn chia sẻ điều gì không?", null));
+        questions.add(new Question("Bạn cảm thấy tự tin về bản thân không?", null));
+        questions.add(new Question("Bạn có lo lắng điều gì gần đây?", null));
+        questions.add(new Question("Bạn muốn làm gì sau buổi này?", null));
+
+        currentIndex = 0;
+        txtCauHoi.setText(questions.get(currentIndex).getText());
+    }
+
     private void toggleRecording() {
         if (!isRecording) startRecording();
         else stopRecording();
@@ -86,7 +106,6 @@ public class HienCauHoiGhiAmActivity extends AppCompatActivity {
             isRecording = true;
             startTimer();
             btnRecord.setImageResource(R.drawable.dangghiam);
-
             txtKetQuaNoi.setText("");
 
             String time = new SimpleDateFormat(
@@ -107,15 +126,9 @@ public class HienCauHoiGhiAmActivity extends AppCompatActivity {
             mediaRecorder.prepare();
             mediaRecorder.start();
 
-            Toast.makeText(this,
-                    "🎙 Đang ghi âm...",
-                    Toast.LENGTH_SHORT).show();
-
         } catch (Exception e) {
             e.printStackTrace();
-            Toast.makeText(this,
-                    "Lỗi ghi âm",
-                    Toast.LENGTH_SHORT).show();
+            Toast.makeText(this,"Lỗi ghi âm",Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -130,10 +143,6 @@ public class HienCauHoiGhiAmActivity extends AppCompatActivity {
                 mediaRecorder.release();
                 mediaRecorder = null;
             }
-
-            Toast.makeText(this,
-                    "📤 Đang chuyển giọng nói...",
-                    Toast.LENGTH_SHORT).show();
 
             new SpeechRepository().transcribeAudio(
                     new File(audioFilePath),
@@ -159,9 +168,7 @@ public class HienCauHoiGhiAmActivity extends AppCompatActivity {
 
         } catch (Exception e) {
             e.printStackTrace();
-            Toast.makeText(this,
-                    "Lỗi khi dừng ghi âm",
-                    Toast.LENGTH_SHORT).show();
+            Toast.makeText(this,"Lỗi khi dừng ghi âm",Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -185,50 +192,20 @@ public class HienCauHoiGhiAmActivity extends AppCompatActivity {
         }
     }
 
-    private void loadQuestions() {
-        new QuestionRepository().loadRandomQuestions(
-                new QuestionRepository.QuestionCallback() {
-
-                    @Override
-                    public void onSuccess(List<Question> randomQuestions) {
-                        questions = randomQuestions;
-                        currentIndex = 0;
-
-                        if (questions != null && !questions.isEmpty()) {
-                            txtCauHoi.setText(
-                                    questions.get(currentIndex).getText());
-                        }
-                    }
-
-                    @Override
-                    public void onFail(String error) {
-                        Toast.makeText(
-                                HienCauHoiGhiAmActivity.this,
-                                "Không tải được câu hỏi",
-                                Toast.LENGTH_SHORT).show();
-                    }
-                });
-    }
-
     private void nextQuestion() {
+
         if (isRecording) {
-            Toast.makeText(this,
-                    "Hãy dừng ghi âm trước",
-                    Toast.LENGTH_SHORT).show();
+            Toast.makeText(this,"Hãy dừng ghi âm trước",Toast.LENGTH_SHORT).show();
             return;
         }
 
-        if (questions == null) return;
-
         currentIndex++;
+
         if (currentIndex < questions.size()) {
-            txtCauHoi.setText(
-                    questions.get(currentIndex).getText());
+            txtCauHoi.setText(questions.get(currentIndex).getText());
             txtKetQuaNoi.setText("");
         } else {
-            Toast.makeText(this,
-                    "Đã hết câu hỏi",
-                    Toast.LENGTH_SHORT).show();
+            Toast.makeText(this,"Đã hết câu hỏi",Toast.LENGTH_SHORT).show();
         }
     }
 
