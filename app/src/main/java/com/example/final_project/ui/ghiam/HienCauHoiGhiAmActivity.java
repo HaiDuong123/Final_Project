@@ -8,6 +8,9 @@ import android.media.AudioRecord;
 import android.media.MediaRecorder;
 import android.os.Bundle;
 import android.os.Handler;
+import android.speech.RecognitionListener;
+import android.speech.RecognizerIntent;
+import android.speech.SpeechRecognizer;
 import android.util.Log;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -23,7 +26,9 @@ import com.example.final_project.data.repository.QuestionRepository;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -55,6 +60,11 @@ public class HienCauHoiGhiAmActivity extends AppCompatActivity {
     private static final int MIN_RECORD_TIME = 10; // giây
     private static final int MAX_RECORD_TIME = 30; // giây
 
+    // ================= SPEECH TO TEXT =================
+    private SpeechRecognizer speechRecognizer;
+    private StringBuilder recognitionResult = new StringBuilder();
+    private File txtFile;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -68,6 +78,7 @@ public class HienCauHoiGhiAmActivity extends AppCompatActivity {
 
         initViews();
         loadQuestions();
+        initSpeechRecognizer();
 
         btnVoiceToFile.setOnClickListener(v -> toggleRecording());
         btnCauTiepTheo.setOnClickListener(v -> nextQuestion());
@@ -164,11 +175,14 @@ public class HienCauHoiGhiAmActivity extends AppCompatActivity {
         ).format(new Date());
 
         pcmFile = new File(dir, "answer_" + time + ".pcm");
+        txtFile = new File(dir, "answer_" + time + ".txt");
 
         audioRecord.startRecording();
         isRecording = true;
         startTime = System.currentTimeMillis();
         startTimer();
+
+        startSpeechToText();
 
         new Thread(() -> writePCM(bufferSize)).start();
         Toast.makeText(this, "🎙️ Đang ghi âm...", Toast.LENGTH_SHORT).show();
@@ -212,6 +226,8 @@ public class HienCauHoiGhiAmActivity extends AppCompatActivity {
         } catch (Exception e) {
             Log.e("RECORD", "Error stopping AudioRecord", e);
         }
+
+        stopSpeechToText();
 
         // 3️⃣ Tính thời gian ghi âm
         long endTime = System.currentTimeMillis();
@@ -281,4 +297,73 @@ public class HienCauHoiGhiAmActivity extends AppCompatActivity {
             handler.postDelayed(this, 1000);
         }
     };
+
+    // ================= SPEECH TO TEXT HELPERS =================
+
+    private void initSpeechRecognizer() {
+        if (SpeechRecognizer.isRecognitionAvailable(this)) {
+            speechRecognizer = SpeechRecognizer.createSpeechRecognizer(this);
+            speechRecognizer.setRecognitionListener(new RecognitionListener() {
+                @Override public void onReadyForSpeech(Bundle params) {}
+                @Override public void onBeginningOfSpeech() {}
+                @Override public void onRmsChanged(float rmsdB) {}
+                @Override public void onBufferReceived(byte[] buffer) {}
+                @Override public void onEndOfSpeech() {}
+                @Override public void onError(int error) {
+                    Log.e("STT", "Error: " + error);
+                }
+                @Override
+                public void onResults(Bundle results) {
+                    ArrayList<String> matches = results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
+                    if (matches != null && !matches.isEmpty()) {
+                        String text = matches.get(0);
+                        txtKetQuaNoi.setText(text);
+                        saveTextToFile(text);
+                    }
+                }
+                @Override
+                public void onPartialResults(Bundle partialResults) {
+                    ArrayList<String> matches = partialResults.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
+                    if (matches != null && !matches.isEmpty()) {
+                        txtKetQuaNoi.setText(matches.get(0));
+                    }
+                }
+                @Override public void onEvent(int eventType, Bundle params) {}
+            });
+        }
+    }
+
+    private void startSpeechToText() {
+        if (speechRecognizer != null) {
+            Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+            intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+            intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault());
+            intent.putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true);
+            speechRecognizer.startListening(intent);
+        }
+    }
+
+    private void stopSpeechToText() {
+        if (speechRecognizer != null) {
+            speechRecognizer.stopListening();
+        }
+    }
+
+    private void saveTextToFile(String text) {
+        if (txtFile == null) return;
+        try (FileWriter writer = new FileWriter(txtFile)) {
+            writer.write(text);
+            Log.d("STT", "Saved text to: " + txtFile.getAbsolutePath());
+        } catch (Exception e) {
+            Log.e("STT", "Error saving text file", e);
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (speechRecognizer != null) {
+            speechRecognizer.destroy();
+        }
+    }
 }

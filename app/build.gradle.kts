@@ -40,6 +40,13 @@ android {
 }
 
 dependencies {
+    // Change 1.12.3 to 1.9.3
+    implementation("androidx.activity:activity:1.9.3")
+    // Change 1.17.0 to 1.15.0
+    implementation("androidx.core:core:1.15.0")
+    implementation("androidx.core:core-ktx:1.15.0")
+    // Change 1.0.2 to 1.0.0 (or remove this line if you aren't using Navigation Events)
+    implementation("androidx.navigationevent:navigationevent-android:1.0.0")
 
     implementation(libs.appcompat)
     implementation(libs.material)
