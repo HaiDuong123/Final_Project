@@ -169,7 +169,7 @@
                 android:gravity="center_horizontal"
                 android:background="@drawable/cr40ba6a6a6"
                 android:orientation="vertical">
-                <ImageView
+                <!-- <ImageView
                     android:id="@+id/btnbatdaughiam1"
                     app:shapeAppearanceOverlay="@style/cr40"
                     android:layout_width="90dp"
@@ -178,7 +178,7 @@
                     android:layout_marginBottom="44dp"
                     android:src="@drawable/nutghiam"
                     android:scaleType="fitXY"
-                    />
+                    /> -->
                 <ImageView
                     android:id="@+id/btnbatdaughiam2"
                     app:shapeAppearanceOverlay="@style/cr40"
