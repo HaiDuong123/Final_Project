@@ -92,11 +92,13 @@ public class HienCauHoiGhiAmActivity extends AppCompatActivity {
 
     private void initSessionFiles() {
         File dir = new File(getExternalFilesDir(null), "pcm");
-        if (!dir.exists()) dir.mkdirs();
+        if (!dir.exists())
+            dir.mkdirs();
 
         String time = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(new Date());
 
-        // Khởi tạo file dùng chung cho toàn bộ quá trình trả lời (AI trầm cảm cần file này)
+        // Khởi tạo file dùng chung cho toàn bộ quá trình trả lời (AI trầm cảm cần file
+        // này)
         sessionPcmFile = new File(dir, "session_" + time + ".pcm");
     }
 
@@ -130,7 +132,8 @@ public class HienCauHoiGhiAmActivity extends AppCompatActivity {
     private void nextQuestion() {
         // --- BƯỚC BẢO VỆ CHỐNG SẬP APP ---
         if (questions == null || questions.isEmpty()) {
-            Toast.makeText(this, "Đang tải câu hỏi hoặc dữ liệu bị lỗi, vui lòng thử lại sau.", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Đang tải câu hỏi hoặc dữ liệu bị lỗi, vui lòng thử lại sau.", Toast.LENGTH_SHORT)
+                    .show();
             return; // Chặn không cho chạy tiếp các lệnh bên dưới
         }
 
@@ -151,7 +154,8 @@ public class HienCauHoiGhiAmActivity extends AppCompatActivity {
                 return;
             }
 
-            // Ghi âm xong hết -> Thực hiện nhận diện giọng nói bằng Vosk trước khi chuyển màn hình
+            // Ghi âm xong hết -> Thực hiện nhận diện giọng nói bằng Vosk trước khi chuyển
+            // màn hình
             transcribePCMToText(sessionPcmFile);
 
             // Ghi âm xong hết -> Chuyển sang màn hình chờ kết quả của AI trầm cảm
@@ -180,7 +184,8 @@ public class HienCauHoiGhiAmActivity extends AppCompatActivity {
     private void startPCMRecording() {
         int bufferSize = AudioRecord.getMinBufferSize(SAMPLE_RATE, CHANNEL, ENCODING);
 
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+        if (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
             Toast.makeText(this, "Chưa cấp quyền ghi âm!", Toast.LENGTH_SHORT).show();
             return;
         }
@@ -239,7 +244,8 @@ public class HienCauHoiGhiAmActivity extends AppCompatActivity {
     }
 
     private void stopPCMRecording() {
-        if (!isRecording) return;
+        if (!isRecording)
+            return;
 
         // Ra lệnh dừng ghi âm
         isRecording = false;
@@ -288,7 +294,8 @@ public class HienCauHoiGhiAmActivity extends AppCompatActivity {
                     },
                     (exception) -> {
                         Log.e("VOSK", "Error loading Vosk model: ", exception);
-                        runOnUiThread(() -> Toast.makeText(this, "Could not load Vosk model", Toast.LENGTH_SHORT).show());
+                        runOnUiThread(
+                                () -> Toast.makeText(this, "Could not load Vosk model", Toast.LENGTH_SHORT).show());
                     });
         } else {
             recognizeAsync(pcmFile);
@@ -302,7 +309,7 @@ public class HienCauHoiGhiAmActivity extends AppCompatActivity {
                 byte[] buffer = new byte[4096];
                 int nread;
                 while ((nread = is.read(buffer)) != -1) {
-                    rec.acceptWaveform(buffer, nread);
+                    rec.acceptWaveForm(buffer, nread);
                 }
                 String jsonResult = rec.getFinalResult();
 
