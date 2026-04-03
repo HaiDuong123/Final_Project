@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -23,6 +24,7 @@ public class DangNhapActivity extends AppCompatActivity {
 
     private EditText username, userpassword;
     private LinearLayout btnLogin;
+    private TextView txtQuenMatKhau; // 🔥 thêm
 
     private ApiService apiService;
 
@@ -31,18 +33,26 @@ public class DangNhapActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_dangnhap1);
 
-        // ánh xạ view
         username = findViewById(R.id.user_name);
         userpassword = findViewById(R.id.user_password);
         btnLogin = findViewById(R.id.btn_login);
 
-        // khởi tạo retrofit
+        txtQuenMatKhau = findViewById(R.id.txtquenmatkhau); // 🔥 ánh xạ
+
         apiService = RetrofitClient
                 .getInstance()
                 .create(ApiService.class);
 
-        // sự kiện click login
         btnLogin.setOnClickListener(v -> login());
+
+        // 🔥 click quên mật khẩu
+        txtQuenMatKhau.setOnClickListener(v -> {
+            Intent intent = new Intent(
+                    DangNhapActivity.this,
+                    QuenMatKhauActivity.class
+            );
+            startActivity(intent);
+        });
     }
 
     private void login() {
@@ -74,7 +84,6 @@ public class DangNhapActivity extends AppCompatActivity {
                                 "Đăng nhập thành công",
                                 Toast.LENGTH_SHORT).show();
 
-                        // chuyển sang TrangChu + gửi username
                         Intent intent = new Intent(
                                 DangNhapActivity.this,
                                 TrangChuActivity.class
@@ -86,14 +95,12 @@ public class DangNhapActivity extends AppCompatActivity {
                         finish();
 
                     } else {
-
                         Toast.makeText(DangNhapActivity.this,
                                 apiResponse.getMessage(),
                                 Toast.LENGTH_SHORT).show();
                     }
 
                 } else {
-
                     Toast.makeText(DangNhapActivity.this,
                             "Lỗi server",
                             Toast.LENGTH_SHORT).show();
@@ -102,7 +109,6 @@ public class DangNhapActivity extends AppCompatActivity {
 
             @Override
             public void onFailure(Call<ApiResponse> call, Throwable t) {
-
                 Toast.makeText(DangNhapActivity.this,
                         "Không kết nối được server",
                         Toast.LENGTH_SHORT).show();

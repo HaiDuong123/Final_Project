@@ -154,7 +154,7 @@
 
 
             <TextView
-                android:id="@+id/r1l82ut62a2q"
+                android:id="@+id/txtquenmatkhau"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textColor="#EA4335"

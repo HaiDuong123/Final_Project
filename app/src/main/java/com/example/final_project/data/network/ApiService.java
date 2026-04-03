@@ -2,6 +2,7 @@ package com.example.final_project.data.network;
 
 import com.example.final_project.data.model.Account;
 import com.example.final_project.data.model.ApiResponse;
+import java.util.Map;
 
 import retrofit2.Call;
 import retrofit2.http.Body;
@@ -21,4 +22,6 @@ public interface ApiService {
     // API Login
     @POST("/login")
     Call<ApiResponse> login(@Body Account account);
+    @POST("/change-password")
+    Call<ApiResponse> changePassword(@Body Map<String, String> body);
 }
