@@ -18,14 +18,6 @@
             android:orientation="vertical"
             android:padding="20dp">
 
-            <ImageView
-                android:id="@+id/r36h1tttdukv"
-                android:layout_width="60dp"
-                android:layout_height="60dp"
-                android:layout_marginTop="20dp"
-                android:layout_marginBottom="20dp"
-                android:src="@drawable/back"
-                android:scaleType="fitXY"/>
 
             <LinearLayout
                 android:id="@+id/rdqlsp8nh19p"

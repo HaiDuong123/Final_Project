@@ -20,6 +20,7 @@ import androidx.core.content.ContextCompat;
 
 import com.example.final_project.R;
 import com.example.final_project.text.TFLiteHelper;
+import com.example.final_project.ui.trangchu.TrangChuActivity;
 
 import java.util.ArrayList;
 import java.util.Locale;
@@ -27,7 +28,7 @@ import java.util.Locale;
 public class TrangDauTienGhiAmActivity extends AppCompatActivity {
 
     private TextView txtCauHoi, txtKetQuaNoi, txtThoiGian;
-    private ImageView btnVoice;
+    private ImageView btnVoice,btnBack;
     private LinearLayout btnNext;
 
     private SpeechRecognizer speechRecognizer;
@@ -62,6 +63,15 @@ public class TrangDauTienGhiAmActivity extends AppCompatActivity {
 
         btnVoice.setOnClickListener(v -> toggleSpeech());
         btnNext.setOnClickListener(v -> finishTest());
+        btnBack.setOnClickListener(v -> {
+            Intent intent = new Intent(
+                    TrangDauTienGhiAmActivity.this,
+                    BatDauGhiAmActivity.class
+            );
+            startActivity(intent);
+            finish(); // đóng màn hiện tại
+        });
+
     }
 
     private void initViews() {
@@ -70,6 +80,8 @@ public class TrangDauTienGhiAmActivity extends AppCompatActivity {
         txtThoiGian = findViewById(R.id.textthoigianghiam);
         btnVoice = findViewById(R.id.btnbatdaughiam);
         btnNext = findViewById(R.id.btn_cautieptheo);
+        btnBack = findViewById(R.id.btn_back);
+
     }
 
     private void initSpeech() {
