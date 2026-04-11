@@ -1,23 +1,25 @@
+require("dotenv").config()
+
 const express = require("express")
 const mongoose = require("mongoose")
 const bodyParser = require("body-parser")
+const cors = require("cors")
+const bcrypt = require("bcrypt")
 
 const app = express()
 
 app.use(bodyParser.json())
+app.use(cors())
 
 // ================= MongoDB =================
-mongoose.connect(
-"mongodb+srv://Buinhathuy12345DB:Lienquanmoba123@cluster0.f6hfvik.mongodb.net/account"
-)
+mongoose.connect(process.env.MONGO_URI)
 .then(() => console.log("MongoDB Connected"))
-.catch(err => console.log(err))
-
+.catch(err => console.log("Mongo Error:", err))
 
 // ================= Schema =================
 const AccountSchema = new mongoose.Schema({
-    username: String,
-    password: String,
+    username: { type: String, required: true, unique: true },
+    password: { type: String, required: true },
     email: String
 })
 
@@ -26,79 +28,94 @@ const Account = mongoose.model("accounts", AccountSchema)
 
 // ================= REGISTER =================
 app.post("/register", async (req, res) => {
-
     try {
-
         const { username, password, email } = req.body
+
+        if (!username || !password) {
+            return res.json({
+                ok: false,
+                message: "Thiếu username hoặc password"
+            })
+        }
 
         const exist = await Account.findOne({ username })
 
         if (exist) {
             return res.json({
-                ok:false,
-                message:"Username đã tồn tại"
+                ok: false,
+                message: "Username đã tồn tại"
             })
         }
 
+        // 🔐 hash password
+        const hashedPassword = await bcrypt.hash(password, 10)
+
         const account = new Account({
             username,
-            password,
+            password: hashedPassword,
             email
         })
 
         await account.save()
 
         res.json({
-            ok:true,
-            message:"Register success",
+            ok: true,
+            message: "Register success",
             data: account
         })
 
-    } catch(err){
+    } catch (err) {
         res.json({
-            ok:false,
-            message:err.message
+            ok: false,
+            message: err.message
         })
     }
-
 })
 
 
 // ================= LOGIN =================
 app.post("/login", async (req, res) => {
+    try {
+        const { username, password } = req.body
 
-    const { username, password } = req.body
+        const user = await Account.findOne({ username })
 
-    const user = await Account.findOne({
-        username,
-        password
-    })
+        if (!user) {
+            return res.json({
+                ok: false,
+                message: "Sai tài khoản hoặc mật khẩu"
+            })
+        }
 
-    if(!user){
-        return res.json({
-            ok:false,
-            message:"Sai tài khoản hoặc mật khẩu"
+        // 🔐 so sánh password
+        const isMatch = await bcrypt.compare(password, user.password)
+
+        if (!isMatch) {
+            return res.json({
+                ok: false,
+                message: "Sai tài khoản hoặc mật khẩu"
+            })
+        }
+
+        res.json({
+            ok: true,
+            message: "Login success",
+            data: user
+        })
+
+    } catch (err) {
+        res.json({
+            ok: false,
+            message: err.message
         })
     }
-
-    res.json({
-        ok:true,
-        message:"Login success",
-        data:user
-    })
-
 })
 
 
-// ================= CHANGE PASSWORD (NEW) =================
+// ================= CHANGE PASSWORD =================
 app.post("/change-password", async (req, res) => {
-
     try {
-
-        const username = req.body.username
-        const newPassword = req.body.newPassword
-
-        console.log("DATA RECEIVED:", req.body)
+        const { username, newPassword } = req.body
 
         if (!username || !newPassword) {
             return res.json({
@@ -116,7 +133,10 @@ app.post("/change-password", async (req, res) => {
             })
         }
 
-        user.password = newPassword
+        // 🔐 hash password mới
+        const hashedPassword = await bcrypt.hash(newPassword, 10)
+
+        user.password = hashedPassword
         await user.save()
 
         return res.json({
@@ -133,6 +153,15 @@ app.post("/change-password", async (req, res) => {
 })
 
 
-app.listen(3000, () => {
-    console.log("Server running on port 3000")
+// ================= TEST API =================
+app.get("/", (req, res) => {
+    res.send("API is running 🚀")
+})
+
+
+// ================= START SERVER =================
+const PORT = process.env.PORT || 3000
+
+app.listen(PORT, () => {
+    console.log("Server running on port " + PORT)
 })
