@@ -29,6 +29,7 @@ public class KetQuaTracNghiemActivity extends AppCompatActivity {
         btnKetThuc = findViewById(R.id.btnketthuctracnghiem);
 
         score = getIntent().getIntExtra("score", 0);
+        com.example.final_project.util.DataManager.saveQuizScore(this, score);
         showResult(score);
 
         // Finish button

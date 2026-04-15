@@ -20,7 +20,6 @@ import androidx.core.content.ContextCompat;
 
 import com.example.final_project.R;
 import com.example.final_project.text.TFLiteHelper;
-import com.example.final_project.ui.trangchu.TrangChuActivity;
 
 import java.util.ArrayList;
 import java.util.Locale;
@@ -28,50 +27,41 @@ import java.util.Locale;
 public class TrangDauTienGhiAmActivity extends AppCompatActivity {
 
     private TextView txtCauHoi, txtKetQuaNoi, txtThoiGian;
-    private ImageView btnVoice,btnBack;
+    private ImageView btnVoice, btnBack;
     private LinearLayout btnNext;
 
     private SpeechRecognizer speechRecognizer;
     private Intent speechIntent;
     private boolean isListening = false;
 
-    // 🔥 FIX: Dùng StringBuilder để cộng dồn văn bản khi nói dài
     private StringBuilder fullTextBuilder = new StringBuilder();
     private String lastRecognizedText = "";
 
     private Handler handler = new Handler();
     private long startTime;
-    private long recordSeconds = 0;
-    private static final int MIN_RECORD_TIME = 10;
 
     private TFLiteHelper tfLiteHelper;
-    private final String question = "Trong 2 tuần gần đây, bạn có thường cảm thấy buồn bã, chán nản hoặc mất hứng thú với mọi việc không?";
+
+    private final String question =
+            "Trong 2 tuần gần đây, bạn có thường cảm thấy buồn bã, chán nản hoặc mất hứng thú với mọi việc không?";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_manhinhcho_ghiam);
 
-        // Khởi tạo AI sớm để tránh lag
         tfLiteHelper = new TFLiteHelper(this);
 
         requestPermission();
         initViews();
-        setNextButtonEnabled(false);
         initSpeech();
-        showQuestion(); // Đảm bảo câu hỏi hiện ngay từ đầu
+
+        setNextButtonEnabled(false);
+        txtCauHoi.setText(question);
 
         btnVoice.setOnClickListener(v -> toggleSpeech());
         btnNext.setOnClickListener(v -> finishTest());
-        btnBack.setOnClickListener(v -> {
-            Intent intent = new Intent(
-                    TrangDauTienGhiAmActivity.this,
-                    BatDauGhiAmActivity.class
-            );
-            startActivity(intent);
-            finish(); // đóng màn hiện tại
-        });
-
+        btnBack.setOnClickListener(v -> finish());
     }
 
     private void initViews() {
@@ -81,56 +71,47 @@ public class TrangDauTienGhiAmActivity extends AppCompatActivity {
         btnVoice = findViewById(R.id.btnbatdaughiam);
         btnNext = findViewById(R.id.btn_cautieptheo);
         btnBack = findViewById(R.id.btn_back);
-
     }
 
     private void initSpeech() {
-        if (speechRecognizer != null) {
-            speechRecognizer.destroy();
-        }
-
         speechRecognizer = SpeechRecognizer.createSpeechRecognizer(this);
+
         speechIntent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
-        speechIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+        speechIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,
+                RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
         speechIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, "vi-VN");
         speechIntent.putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true);
 
-        // 🔥 FIX 1: Xóa dòng lỗi EXTRA_LANGUAGE (true) cũ và thay bằng cấu hình chuẩn
-        speechIntent.putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_COMPLETE_SILENCE_LENGTH_MILLIS, 5000);
-        speechIntent.putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_POSSIBLY_COMPLETE_SILENCE_LENGTH_MILLIS, 5000);
-
         speechRecognizer.setRecognitionListener(new RecognitionListener() {
+
             @Override
             public void onReadyForSpeech(Bundle params) {
-                // Không xóa Text cũ ở đây để tránh bị chớp màn hình khi restart mic
-                if (fullTextBuilder.length() == 0) {
-                    txtKetQuaNoi.setText("Đang nghe...");
-                }
+                txtKetQuaNoi.setText("Hệ thống đang nghe...");
             }
 
             @Override
             public void onPartialResults(Bundle partialResults) {
-                ArrayList<String> data = partialResults.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
+                ArrayList<String> data =
+                        partialResults.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
+
                 if (data != null && !data.isEmpty()) {
                     String currentPartial = data.get(0);
 
-                    // 🔥 FIX 2: Hiển thị kết hợp Builder (đã lưu) + Partial (đang nghe)
-                    // Dùng dấu cách để phân tách các đoạn
                     String displayText = fullTextBuilder.toString() + " " + currentPartial;
-                    txtKetQuaNoi.setText(displayText.trim());
 
-                    // Cập nhật biến tạm để nếu bấm "Tiếp theo" ngay vẫn có dữ liệu
+                    txtKetQuaNoi.setText(displayText.trim());
                     lastRecognizedText = displayText.trim();
                 }
             }
 
             @Override
             public void onResults(Bundle results) {
-                ArrayList<String> data = results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
+                ArrayList<String> data =
+                        results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
+
                 if (data != null && !data.isEmpty()) {
                     String finalSegment = data.get(0);
 
-                    // 🔥 FIX 3: Tránh cộng dồn trùng lặp văn bản
                     if (!fullTextBuilder.toString().contains(finalSegment)) {
                         fullTextBuilder.append(finalSegment).append(" ");
                     }
@@ -139,7 +120,6 @@ public class TrangDauTienGhiAmActivity extends AppCompatActivity {
                     txtKetQuaNoi.setText(lastRecognizedText);
                 }
 
-                // Tự động nghe tiếp nếu vẫn đang trong chế độ ghi âm
                 if (isListening) {
                     speechRecognizer.startListening(speechIntent);
                 }
@@ -147,17 +127,12 @@ public class TrangDauTienGhiAmActivity extends AppCompatActivity {
 
             @Override
             public void onError(int error) {
-                Log.e("SPEECH_FIX", "Error code: " + error);
-
-                // Lỗi 7 (No Match) thường xảy ra khi im lặng hoặc mic kém -> Phải restart
                 if (isListening) {
-                    new Handler(getMainLooper()).postDelayed(() -> {
-                        try {
+                    handler.postDelayed(() -> {
+                        if (isListening) {
                             speechRecognizer.startListening(speechIntent);
-                        } catch (Exception e) {
-                            Log.e("SPEECH_FIX", "Restart failed", e);
                         }
-                    }, 400);
+                    }, 500);
                 }
             }
 
@@ -170,123 +145,121 @@ public class TrangDauTienGhiAmActivity extends AppCompatActivity {
     }
 
     private void toggleSpeech() {
-        if (!isListening) {
-            startListening();
-        } else {
-            stopListening();
-        }
+        if (!isListening) startListening();
+        else stopListening();
     }
 
     private void startListening() {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
-            Toast.makeText(this, "Chưa cấp quyền mic!", Toast.LENGTH_SHORT).show();
+        if (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+
+            Toast.makeText(this, "Vui lòng cấp quyền Mic!", Toast.LENGTH_SHORT).show();
             return;
         }
 
         isListening = true;
-        fullTextBuilder.setLength(0); // Xóa dữ liệu cũ
+        fullTextBuilder.setLength(0);
         lastRecognizedText = "";
 
         speechRecognizer.startListening(speechIntent);
-        setRecordingUI(true);
+        btnVoice.setImageResource(R.drawable.dangghiam);
+
+        setNextButtonEnabled(false);
 
         startTime = System.currentTimeMillis();
         handler.post(timerRunnable);
-
-        // 🔹 Ghi âm bắt đầu → disable button, màu xanh nhạt
-        setNextButtonEnabled(false);
     }
 
     private void stopListening() {
         isListening = false;
+
         try {
             speechRecognizer.stopListening();
         } catch (Exception ignored) {}
 
-        setRecordingUI(false);
+        btnVoice.setImageResource(R.drawable.nutghiam);
         handler.removeCallbacks(timerRunnable);
 
-        // 🔹 Ghi âm xong → enable button, màu xanh đậm
         setNextButtonEnabled(true);
 
-        // Hiển thị text cuối cùng
-        if (!lastRecognizedText.isEmpty()) {
-            txtKetQuaNoi.setText(lastRecognizedText);
-        } else {
-            txtKetQuaNoi.setText("Nhấn nút để trả lời bằng giọng nói");
+        if (lastRecognizedText.isEmpty()) {
+            txtKetQuaNoi.setText("Nhấn nút để trả lời lại");
         }
-    }
-
-    private void setRecordingUI(boolean isRecording) {
-        btnVoice.setImageResource(isRecording ? R.drawable.dangghiam : R.drawable.nutghiam);
     }
 
     private final Runnable timerRunnable = new Runnable() {
         @Override
         public void run() {
-            recordSeconds = (System.currentTimeMillis() - startTime) / 1000;
-            txtThoiGian.setText(String.format(Locale.getDefault(), "%02d:%02d", recordSeconds / 60, recordSeconds % 60));
+            long sec = (System.currentTimeMillis() - startTime) / 1000;
+
+            txtThoiGian.setText(String.format(Locale.getDefault(),
+                    "%02d:%02d", sec / 60, sec % 60));
+
             handler.postDelayed(this, 1000);
         }
     };
 
-    private void showQuestion() {
-        txtCauHoi.setText(question);
-    }
-
     private void finishTest() {
-        isListening = false;
-        speechRecognizer.stopListening();
-        handler.removeCallbacks(timerRunnable);
+        stopListening();
 
-        String answer1 = lastRecognizedText.trim();
+        String answer = lastRecognizedText.trim();
 
-        if (answer1.isEmpty() || answer1.equalsIgnoreCase("Đang nghe...")) {
-            Toast.makeText(this, "Vui lòng trả lời câu 1!", Toast.LENGTH_SHORT).show();
+        if (answer.isEmpty() ||
+                answer.equalsIgnoreCase("Hệ thống đang nghe...")) {
+
+            Toast.makeText(this,
+                    "Vui lòng trả lời câu hỏi!",
+                    Toast.LENGTH_SHORT).show();
             return;
         }
 
-        // 1. CHẠY MODEL TEXT (TFLite)
-        String result_text = tfLiteHelper.predict(answer1);
+        String result = tfLiteHelper.predict(answer);
+        int score = mapResultToScore(result);
 
-        int score_text = 0;
-        if (result_text != null) {
-            result_text = result_text.toLowerCase();
+        Log.d("AI_DEBUG", "Text: " + answer);
+        Log.d("AI_DEBUG", "Label: " + result);
+        Log.d("AI_DEBUG", "Score: " + score);
 
-            switch (result_text) {
-                case "normal":   score_text = 2;  break;
-                case "minimal":  score_text = 7;  break;
-                case "mild":     score_text = 12; break;
-                case "moderate": score_text = 17; break;
-                case "severe":   score_text = 22; break;
-            }
-        }
-
-        // 2. TRUYỀN SANG TRANG 2
         Intent intent = new Intent(this, TrangTiepTheoGhiAmActivity.class);
-
-        intent.putExtra("score_text", score_text);
-        intent.putExtra("result_text", result_text);
+        intent.putExtra("score_text", score);
+        intent.putExtra("result_text", result);
 
         startActivity(intent);
         finish();
     }
 
-    private void requestPermission() {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.RECORD_AUDIO}, 1);
+    private int mapResultToScore(String result) {
+        if (result == null) return 2;
+
+        switch (result.toLowerCase()) {
+            case "normal": return 2;
+            case "minimal": return 7;
+            case "mild": return 12;
+            case "moderate": return 17;
+            case "severe": return 22;
+            default: return 2;
         }
     }
+
+    private void requestPermission() {
+        if (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.RECORD_AUDIO}, 1);
+        }
+    }
+
     private void setNextButtonEnabled(boolean enabled) {
-        btnNext.setEnabled(enabled); // 🔥 QUAN TRỌNG
+        btnNext.setEnabled(enabled);
+        btnNext.setAlpha(enabled ? 1f : 0.5f);
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if (speechRecognizer != null) {
-            speechRecognizer.destroy();
-        }
+
+        if (speechRecognizer != null) speechRecognizer.destroy();
         handler.removeCallbacks(timerRunnable);
     }
 }

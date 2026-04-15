@@ -22,8 +22,7 @@ public class ChoKetQuaGhiAmActivity extends AppCompatActivity {
     private String resultText;
     private TextView txtTrangThai;
 
-    private Handler loadingHandler = new Handler(Looper.getMainLooper());
-    private boolean isLoading = true;
+    private Handler handler = new Handler(Looper.getMainLooper());
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,11 +33,18 @@ public class ChoKetQuaGhiAmActivity extends AppCompatActivity {
 
         Intent intent = getIntent();
 
-        scoreText = intent.getIntExtra("score_text", 0);
+        scoreText = intent.getIntExtra("score_text", -1);
         resultText = intent.getStringExtra("result_text");
 
         String pcmPath = intent.getStringExtra("pcmPath");
         long duration = intent.getLongExtra("duration", 0);
+
+        Log.d("FLOW_DEBUG", "RECEIVE scoreText = " + scoreText);
+        Log.d("FLOW_DEBUG", "RECEIVE resultText = " + resultText);
+
+        if (scoreText == -1) {
+            Log.e("FLOW_ERROR", "❌ score_text KHÔNG được truyền!");
+        }
 
         if (pcmPath == null || !new File(pcmPath).exists()) {
             Toast.makeText(this, "File ghi âm lỗi", Toast.LENGTH_LONG).show();
@@ -47,104 +53,78 @@ public class ChoKetQuaGhiAmActivity extends AppCompatActivity {
         }
 
         txtTrangThai.setText(
-                "Thời lượng ghi âm: " + (duration / 1500) + " giây\n"
+                "Thời lượng ghi âm: " + (duration / 1000) + " giây\n"
         );
 
-        new Thread(() -> {
-            try {
-                long startTime = System.currentTimeMillis();
-
-                float[] raw = PCMUtilActivity.readPCM16(pcmPath);
-
-                // ================= 1. TRIM ĐẦU / CUỐI =================
-                float[] processedAudio = trimSilenceEdges(raw, 0.02);
-
-                // fallback nếu trim rỗng
-                if (processedAudio.length == 0) {
-                    processedAudio = raw;
-                }
-
-
-
-                // ================= 3. CHECK IM LẶNG LIÊN TỤC 5s =================
-                if (hasLongSilence(processedAudio)) {
-
-                    isLoading = false;
-
-                    runOnUiThread(() -> {
-                        txtTrangThai.setText("Phát hiện im lặng quá lâu ");
-
-                        new Handler().postDelayed(() -> {
-                            Toast.makeText(
-                                    this,
-                                    "Vui lòng nói liên tục",
-                                    Toast.LENGTH_SHORT
-                            ).show();
-
-                            startActivity(new Intent(
-                                    this,
-                                    TrangTiepTheoGhiAmActivity.class
-                            ));
-                            finish();
-
-                        }, 3000);
-                    });
-
-                    return;
-                }
-
-                // ================= INFER =================
-                VoiceModelActivity inferencer =
-                        VoiceModelActivity.getInstance(this);
-
-                float[] logits = inferencer.infer(processedAudio);
-
-                long endTime = System.currentTimeMillis();
-                long inferTime = endTime - startTime;
-
-                Log.d("DEBUG", "Logits = " + logits[0] + ", " + logits[1]);
-                Log.d("DEBUG", "Inference time = " + inferTime + " ms");
-
-                int label = logits[1] > logits[0] ? 1 : 0;
-
-                isLoading = false;
-
-                runOnUiThread(() -> {
-
-                    txtTrangThai.setText(
-                            "Xử lý xong trong " + inferTime + " ms"
-                    );
-
-                    new Handler().postDelayed(() -> {
-                        Intent i = new Intent(
-                                this,
-                                KetQuaGhiAmActivity.class
-                        );
-                        i.putExtra("label", label);
-                        i.putExtra("score0", logits[0]);
-                        i.putExtra("score1", logits[1]);
-                        i.putExtra("inferTime", inferTime);
-
-                        // TEXT
-                        i.putExtra("final_score", scoreText);
-                        i.putExtra("result_text", resultText);
-
-                        startActivity(i);
-                        finish();
-                    }, 1000);
-
-                });
-
-            } catch (Exception e) {
-                Log.e("INFER_ERROR", Log.getStackTraceString(e));
-                runOnUiThread(() ->
-                        txtTrangThai.setText("Lỗi xử lý giọng nói!")
-                );
-            }
-        }).start();
+        new Thread(() -> processAudio(pcmPath)).start();
     }
 
-    // ================= TRIM SILENCE =================
+    private void processAudio(String pcmPath) {
+        try {
+            long startTime = System.currentTimeMillis();
+
+            float[] raw = PCMUtilActivity.readPCM16(pcmPath);
+
+            float[] processedAudio = trimSilenceEdges(raw, 0.02);
+            if (processedAudio.length == 0) processedAudio = raw;
+
+            if (hasLongSilence(processedAudio)) {
+                runOnUiThread(() -> {
+                    txtTrangThai.setText("Phát hiện im lặng quá lâu");
+
+                    handler.postDelayed(() -> {
+                        Toast.makeText(this, "Vui lòng nói liên tục", Toast.LENGTH_SHORT).show();
+                        startActivity(new Intent(this, TrangTiepTheoGhiAmActivity.class));
+                        finish();
+                    }, 2000);
+                });
+                return;
+            }
+
+            VoiceModelActivity model = VoiceModelActivity.getInstance(this);
+            float[] logits = model.infer(processedAudio);
+
+            long inferTime = System.currentTimeMillis() - startTime;
+
+            Log.d("AI_DEBUG", "logits0 = " + logits[0]);
+            Log.d("AI_DEBUG", "logits1 = " + logits[1]);
+
+            int label = logits[1] > logits[0] ? 1 : 0;
+
+            Log.d("FLOW_DEBUG", "SEND label = " + label);
+            Log.d("FLOW_DEBUG", "SEND scoreText = " + scoreText);
+
+            runOnUiThread(() -> {
+                txtTrangThai.setText("Phân tích xong (" + inferTime + " ms)");
+
+                handler.postDelayed(() -> {
+
+                    Intent i = new Intent(this, KetQuaGhiAmActivity.class);
+
+                    // ✅ FIX 2: KEY ĐỒNG NHẤT
+                    i.putExtra("label_voice", label);
+                    i.putExtra("score_text", scoreText);
+
+                    i.putExtra("score0", logits[0]);
+                    i.putExtra("score1", logits[1]);
+                    i.putExtra("inferTime", inferTime);
+                    i.putExtra("result_text", resultText);
+
+                    startActivity(i);
+                    finish();
+
+                }, 1000);
+            });
+
+        } catch (Exception e) {
+            Log.e("INFER_ERROR", Log.getStackTraceString(e));
+
+            runOnUiThread(() ->
+                    txtTrangThai.setText("Lỗi xử lý giọng nói!")
+            );
+        }
+    }
+
     private float[] trimSilenceEdges(float[] audio, double threshold) {
         int start = 0, end = audio.length - 1;
 
@@ -166,15 +146,13 @@ public class ChoKetQuaGhiAmActivity extends AppCompatActivity {
 
         float[] trimmed = new float[end - start + 1];
         System.arraycopy(audio, start, trimmed, 0, trimmed.length);
+
         return trimmed;
     }
 
-    // ================= DETECT SILENCE 5s =================
     private boolean hasLongSilence(float[] audio) {
-
-        int frameSize = SAMPLE_RATE / 2; // 0.5s
+        int frameSize = SAMPLE_RATE / 2;
         int silentFrames = 0;
-        int maxSilentFrames = 10; // 5s
 
         for (int i = 0; i + frameSize < audio.length; i += frameSize) {
 
@@ -186,15 +164,10 @@ public class ChoKetQuaGhiAmActivity extends AppCompatActivity {
 
             energy /= frameSize;
 
-            if (energy < 1e-4) {
-                silentFrames++;
-            } else {
-                silentFrames = 0;
-            }
+            if (energy < 1e-4) silentFrames++;
+            else silentFrames = 0;
 
-            if (silentFrames >= maxSilentFrames) {
-                return true;
-            }
+            if (silentFrames >= 10) return true;
         }
 
         return false;

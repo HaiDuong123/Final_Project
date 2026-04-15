@@ -10,7 +10,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -27,15 +26,12 @@ import java.util.Locale;
 
 public class TrangTiepTheoGhiAmActivity extends AppCompatActivity {
 
-    // UI
-    private TextView txtCauHoi, txtThoiGian;
+    private TextView txtCauHoi, txtThoiGian, txtKetQuaNoi;
     private ImageView btnVoice;
-    private TextView txtKetQuaNoi;
-    // DATA từ trang 1
+
     private int scoreText;
     private String resultText;
 
-    // AUDIO
     private AudioRecord audioRecord;
     private boolean isRecording = false;
     private File pcmFile;
@@ -44,26 +40,27 @@ public class TrangTiepTheoGhiAmActivity extends AppCompatActivity {
     private static final int CHANNEL = AudioFormat.CHANNEL_IN_MONO;
     private static final int ENCODING = AudioFormat.ENCODING_PCM_16BIT;
 
-    private static final int MIN_RECORD_TIME = 15; // giây
-    private static final int MAX_RECORD_TIME = 30; // giây
+    private static final int MIN_RECORD_TIME = 15;
+    private static final int MAX_RECORD_TIME = 30;
 
-    // TIMER
     private Handler handler = new Handler();
     private long startTime;
 
-    private final String question2 = "Gần đây bạn có gặp khó khăn trong việc đi vào giấc ngủ, ngủ không sâu giấc hoặc ngủ quá nhiều không?";
+    private final String question2 =
+            "Gần đây bạn có gặp khó khăn trong việc đi vào giấc ngủ, ngủ không sâu giấc hoặc ngủ quá nhiều không?";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_manhinhcho_ghiam_2);
 
-        // 🔥 Nhận dữ liệu từ trang 1
-        scoreText = getIntent().getIntExtra("score_text", 0);
+        scoreText = getIntent().getIntExtra("score_text", 2);
         resultText = getIntent().getStringExtra("result_text");
 
-        initViews();
+        Log.d("FLOW_DEBUG", "scoreText = " + scoreText);
+        Log.d("FLOW_DEBUG", "resultText = " + resultText);
 
+        initViews();
         txtCauHoi.setText(question2);
 
         btnVoice.setOnClickListener(v -> toggleRecording());
@@ -82,14 +79,9 @@ public class TrangTiepTheoGhiAmActivity extends AppCompatActivity {
         txtKetQuaNoi = findViewById(R.id.txtKetQuaNoi);
     }
 
-    // ================= RECORD =================
-
     private void toggleRecording() {
-        if (!isRecording) {
-            startRecording();
-        } else {
-            stopRecording();
-        }
+        if (!isRecording) startRecording();
+        else stopRecording();
     }
 
     private void startRecording() {
@@ -127,7 +119,6 @@ public class TrangTiepTheoGhiAmActivity extends AppCompatActivity {
 
         btnVoice.setImageResource(R.drawable.dangghiam);
         txtKetQuaNoi.setText("🎙️ Đang ghi âm...");
-
     }
 
     private void writePCM(int bufferSize) {
@@ -135,27 +126,28 @@ public class TrangTiepTheoGhiAmActivity extends AppCompatActivity {
 
         try (FileOutputStream fos = new FileOutputStream(pcmFile)) {
             while (isRecording) {
-                int read = audioRecord.read(buffer, 0, buffer.length);
-                if (read > 0) fos.write(buffer, 0, read);
 
-                long sec = (System.currentTimeMillis() - startTime) / 1500;
+                int read = audioRecord.read(buffer, 0, buffer.length);
+
+                if (read > 0) {
+                    fos.write(buffer, 0, read);
+                }
+
+                long sec = (System.currentTimeMillis() - startTime) / 1000;
+
                 if (sec >= MAX_RECORD_TIME) {
                     runOnUiThread(this::stopRecording);
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.e("RECORD_ERROR", "Write PCM lỗi", e);
         }
     }
+
     private void stopRecording() {
 
-        // 1️⃣ Check đang ghi không
-        if (!isRecording) {
-            Log.d("RECORD", "stopRecording: not recording");
-            return;
-        }
+        if (!isRecording) return;
 
-        // 2️⃣ Stop recording
         isRecording = false;
 
         try {
@@ -165,48 +157,38 @@ public class TrangTiepTheoGhiAmActivity extends AppCompatActivity {
                 audioRecord = null;
             }
         } catch (Exception e) {
-            Log.e("RECORD", "Error stopping AudioRecord", e);
+            Log.e("RECORD", "Stop lỗi", e);
         }
 
-        // 3️⃣ Stop timer + UI
         stopTimer();
         btnVoice.setImageResource(R.drawable.nutghiam);
         txtKetQuaNoi.setText("Đã ghi âm xong");
 
-        // 4️⃣ Tính thời gian
         long recordDuration = System.currentTimeMillis() - startTime;
-        Log.d("RECORD", "Duration = " + recordDuration + " ms");
 
-        // 5️⃣ Check thời gian tối thiểu
-        if (recordDuration < MIN_RECORD_TIME * 1500) {
-            Toast.makeText(this, "Ghi âm tối thiểu 15 giây", Toast.LENGTH_SHORT).show();
+        if (recordDuration < MIN_RECORD_TIME * 1000) {
+            Toast.makeText(this, "Vui lòng nói đủ 15 giây", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        // 6️⃣ Check file PCM
         if (pcmFile == null || !pcmFile.exists()) {
             Toast.makeText(this, "Lỗi file ghi âm", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        Toast.makeText(this, "✔️ Ghi âm hoàn tất", Toast.LENGTH_SHORT).show();
+        Log.d("FLOW_DEBUG", "SEND scoreText = " + scoreText);
 
-        // 7️⃣ CHUYỂN SANG CHỜ KẾT QUẢ
         Intent intent = new Intent(this, ChoKetQuaGhiAmActivity.class);
 
-        // TEXT từ trang 1
         intent.putExtra("score_text", scoreText);
         intent.putExtra("result_text", resultText);
 
-        // AUDIO
         intent.putExtra("pcmPath", pcmFile.getAbsolutePath());
         intent.putExtra("duration", recordDuration);
 
         startActivity(intent);
         finish();
     }
-
-    // ================= TIMER =================
 
     private void startTimer() {
         handler.post(timerRunnable);
@@ -220,11 +202,14 @@ public class TrangTiepTheoGhiAmActivity extends AppCompatActivity {
     private final Runnable timerRunnable = new Runnable() {
         @Override
         public void run() {
-            long sec = (System.currentTimeMillis() - startTime) / 1500;
+            long sec = (System.currentTimeMillis() - startTime) / 1000;
+
             txtThoiGian.setText(
-                    String.format(Locale.getDefault(), "%02d:%02d", sec / 60, sec % 60)
+                    String.format(Locale.getDefault(),
+                            "%02d:%02d", sec / 60, sec % 60)
             );
-            handler.postDelayed(this, 1500);
+
+            handler.postDelayed(this, 1000);
         }
     };
 }
