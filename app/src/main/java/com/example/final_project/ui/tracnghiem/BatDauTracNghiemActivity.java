@@ -22,11 +22,11 @@ public class BatDauTracNghiemActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_batdau_tracnghiem);
 
-        // ánh xạ nút bắt đầu
+
         btnBatDau = findViewById(R.id.btn_batdautracnghiem);
         btnBack = findViewById(R.id.btn_back);
 
-        // xử lý click
+
         btnBatDau.setOnClickListener(v -> {
             Intent intent = new Intent(
                     BatDauTracNghiemActivity.this,

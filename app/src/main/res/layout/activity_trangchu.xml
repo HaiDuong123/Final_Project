@@ -69,7 +69,8 @@
             android:layout_height="wrap_content"/>
 
         <TextView
-            android:text="Trung bình"
+            android:id="@+id/txtFinalResult"
+            android:text="Chưa có dữ liệu"
             android:textColor="#FFFFFF"
             android:textSize="24sp"
             android:textStyle="bold"

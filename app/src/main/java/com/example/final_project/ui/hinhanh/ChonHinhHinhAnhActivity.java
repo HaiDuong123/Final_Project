@@ -269,6 +269,8 @@ public class ChonHinhHinhAnhActivity extends AppCompatActivity {
                 txtKetQua.setTextColor(Color.parseColor("#008000"));
                 txtKetQua.setText("TÂM TRẠNG BÌNH THƯỜNG");
             }
+            boolean isDepressed = probDepression > probNormal;
+            com.example.final_project.util.DataManager.saveFaceResult(this, isDepressed);
 
         } catch (Exception e) {
             e.printStackTrace();
