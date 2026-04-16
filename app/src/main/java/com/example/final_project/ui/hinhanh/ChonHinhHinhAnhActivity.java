@@ -250,10 +250,7 @@ public class ChonHinhHinhAnhActivity extends AppCompatActivity {
             // 1. Đưa khuôn mặt vừa cắt qua hàm làm mờ (48x48) và ép trắng đen
             Bitmap lowResGrayFace = getLowResGrayscaleBitmap(bitmap, 48, 48);
 
-            // 2. Hiển thị cái ảnh trắng đen 48x48 lên màn hình cho dễ nhìn (Debug)
-            runOnUiThread(() -> imgHienThi.setImageBitmap(lowResGrayFace));
-
-            // 3. Đưa vào Buffer
+            // 2. Đưa vào Buffer
             ByteBuffer inputBuffer = convertBitmapToGrayByteBuffer(lowResGrayFace);
             float[][] outputBuffer = new float[1][2];
 
@@ -262,15 +259,16 @@ public class ChonHinhHinhAnhActivity extends AppCompatActivity {
             float probNormal = outputBuffer[0][0];
             float probDepression = outputBuffer[0][1];
 
-            if (probDepression > probNormal) {
-                txtKetQua.setTextColor(Color.RED);
-                txtKetQua.setText("CÓ DẤU HIỆU TRẦM CẢM");
-            } else {
-                txtKetQua.setTextColor(Color.parseColor("#008000"));
-                txtKetQua.setText("TÂM TRẠNG BÌNH THƯỜNG");
-            }
             boolean isDepressed = probDepression > probNormal;
             com.example.final_project.util.DataManager.saveFaceResult(this, isDepressed);
+
+            // --- TỰ ĐỘNG CHUYỂN SANG TRANG KẾT QUẢ ---
+            Intent intent = new Intent(ChonHinhHinhAnhActivity.this, KetQuaHinhAnhActivity.class);
+            intent.putExtra("isDepressed", isDepressed); // Gửi kết quả (True/False) sang trang kia
+            startActivity(intent);
+
+            // Tắt màn hình chụp ảnh này đi
+            finish();
 
         } catch (Exception e) {
             e.printStackTrace();
