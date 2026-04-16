@@ -247,13 +247,10 @@ public class ChonHinhHinhAnhActivity extends AppCompatActivity {
             txtKetQua.setText("Đang phân tích tâm trạng...");
             txtKetQua.setTextColor(Color.BLACK);
 
-            // 1. Đưa khuôn mặt vừa cắt qua hàm làm mờ (48x48) và ép trắng đen
+
             Bitmap lowResGrayFace = getLowResGrayscaleBitmap(bitmap, 48, 48);
 
-            // 2. Hiển thị cái ảnh trắng đen 48x48 lên màn hình cho dễ nhìn (Debug)
-            runOnUiThread(() -> imgHienThi.setImageBitmap(lowResGrayFace));
 
-            // 3. Đưa vào Buffer
             ByteBuffer inputBuffer = convertBitmapToGrayByteBuffer(lowResGrayFace);
             float[][] outputBuffer = new float[1][2];
 
@@ -262,15 +259,15 @@ public class ChonHinhHinhAnhActivity extends AppCompatActivity {
             float probNormal = outputBuffer[0][0];
             float probDepression = outputBuffer[0][1];
 
-            if (probDepression > probNormal) {
-                txtKetQua.setTextColor(Color.RED);
-                txtKetQua.setText("CÓ DẤU HIỆU TRẦM CẢM");
-            } else {
-                txtKetQua.setTextColor(Color.parseColor("#008000"));
-                txtKetQua.setText("TÂM TRẠNG BÌNH THƯỜNG");
-            }
             boolean isDepressed = probDepression > probNormal;
             com.example.final_project.util.DataManager.saveFaceResult(this, isDepressed);
+
+
+            Intent intent = new Intent(ChonHinhHinhAnhActivity.this, KetQuaHinhAnhActivity.class);
+            intent.putExtra("isDepressed", isDepressed); // Gửi kết quả (True/False) sang trang kia
+            startActivity(intent);
+
+            finish();
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -279,7 +276,7 @@ public class ChonHinhHinhAnhActivity extends AppCompatActivity {
         }
     }
 
-    // --- ĐÃ ĐƠN GIẢN HÓA VÌ ẢNH LÚC NÀY CHẮC CHẮN ĐÃ LÀ TRẮNG ĐEN ---
+
     private ByteBuffer convertBitmapToGrayByteBuffer(Bitmap bitmap) {
         ByteBuffer byteBuffer = ByteBuffer.allocateDirect(4 * 48 * 48 * 1);
         byteBuffer.order(ByteOrder.nativeOrder());
