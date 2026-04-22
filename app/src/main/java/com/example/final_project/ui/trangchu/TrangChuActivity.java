@@ -1,51 +1,48 @@
 package com.example.final_project.ui.trangchu;
 
 import android.content.Intent;
-import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.final_project.R;
-import com.example.final_project.ui.ghiam.BatDauGhiAmActivity;
 import com.example.final_project.ui.tracnghiem.BatDauTracNghiemActivity;
 import com.example.final_project.ui.hinhanh.BatDauHinhAnhActivity;
-import com.example.final_project.util.DataManager; // Import kho dữ liệu dùng chung
+import com.example.final_project.util.DataManager;
 
 public class TrangChuActivity extends AppCompatActivity {
 
-    private ImageView btnTracNghiem, btnGhiAm, btnHinhAnh;
-    private TextView txtHello, txtFinalResult;
+    // ✅ Đã xóa btnGhiAm vì nút này không còn ở màn hình chính
+    private ImageView btnTracNghiem, btnHinhAnh;
+    private TextView txtHello, txtFinalResult, txtStatusNote;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_trangchu);
 
-
-        btnTracNghiem = findViewById(R.id.btn_tracnghiem);
-        btnGhiAm = findViewById(R.id.btn_ghiam);
-        btnHinhAnh = findViewById(R.id.btn_hinhanh);
-        txtHello = findViewById(R.id.txtHello);
-
-
-        txtFinalResult = findViewById(R.id.txtFinalResult);
-
+        initViews();
 
         String username = getIntent().getStringExtra("username");
         if (username != null) {
             txtHello.setText("Chào, " + username);
         }
 
-
         setupNavigation();
-
-
         calculateAndShowFinalScore();
     }
 
+    private void initViews() {
+        btnTracNghiem = findViewById(R.id.btn_tracnghiem);
+        btnHinhAnh = findViewById(R.id.btn_hinhanh);
+        txtHello = findViewById(R.id.txtHello);
+        txtFinalResult = findViewById(R.id.txtFinalResult);
+        txtStatusNote = findViewById(R.id.txtStatusNote);
+    }
 
     @Override
     protected void onResume() {
@@ -54,27 +51,16 @@ public class TrangChuActivity extends AppCompatActivity {
     }
 
     private void calculateAndShowFinalScore() {
-        SharedPreferences prefs = DataManager.getPrefs(this);
+        // 1. Lấy dữ liệu từ DataManager
+        double sQuiz = DataManager.getQuizScore(this) / 24.0;
+        double sVoice = (DataManager.getVoiceResult(this) == 1) ? 1.0 : 0.0;
+        double sFace = DataManager.getFaceResult(this) ? 1.0 : 0.0;
 
-
-        int scorePHQ9 = prefs.getInt("S_QUIZ", 0);    // Điểm Quiz [cite: 7, 8]
-        int scoreText = prefs.getInt("S_TEXT", 0);    // Điểm Text [cite: 31, 32]
-        int labelVoice = prefs.getInt("S_VOICE", 0);  // Nhãn Voice (0 hoặc 1) [cite: 48, 49]
-        boolean isFaceDep = prefs.getBoolean("S_FACE", false); // Nhãn Face [cite: 68, 70]
-
-
-        double sQuiz = scorePHQ9 / 24.0;
-        double sText = scoreText / 24.0;
-        double sVoice = (labelVoice == 1) ? 1.0 : 0.0;
-        double sFace = isFaceDep ? 1.0 : 0.0;
-
-
-        double sFinal = (0.40 * sQuiz) + (0.30 * sText) + (0.20 * sVoice) + (0.10 * sFace);
-
-
+        // 2. Trọng số: Quiz (50%) - Voice (30%) - Face (20%)
+        double sFinal = (0.50 * sQuiz) + (0.30 * sVoice) + (0.20 * sFace);
         int finalScore = (int) Math.round(sFinal * 24);
 
-
+        // 3. Phân loại mức độ
         String level;
         if (finalScore <= 4) level = "Bình thường";
         else if (finalScore <= 9) level = "Nhẹ";
@@ -82,13 +68,31 @@ public class TrangChuActivity extends AppCompatActivity {
         else if (finalScore <= 19) level = "Nặng vừa";
         else level = "Nặng";
 
-
         txtFinalResult.setText(finalScore + " điểm - " + level);
+
+        // 4. Thông báo nhắc nhở bài test còn thiếu
+        StringBuilder missingTests = new StringBuilder();
+
+        if (!DataManager.isQuizCompleted(this)) missingTests.append("Trắc nghiệm, ");
+        if (DataManager.getVoiceResult(this) == -1) missingTests.append("Giọng nói, ");
+        if (!DataManager.isFaceCompleted(this)) missingTests.append("Khuôn mặt, ");
+
+        if (missingTests.length() > 0) {
+            String msg = missingTests.substring(0, missingTests.length() - 2);
+            txtStatusNote.setText("✨ Để chính xác hơn, bạn hãy làm thêm bài: " + msg + " nhé!");
+            txtStatusNote.setTextColor(Color.WHITE);
+            txtStatusNote.setVisibility(View.VISIBLE);
+        } else {
+            txtStatusNote.setText("🌿 Tuyệt vời! Bạn đã hoàn thành tất cả bài kiểm tra.");
+            txtStatusNote.setTextColor(Color.WHITE);
+            txtStatusNote.setVisibility(View.VISIBLE);
+        }
     }
 
     private void setupNavigation() {
         btnTracNghiem.setOnClickListener(v -> startActivity(new Intent(this, BatDauTracNghiemActivity.class)));
-        btnGhiAm.setOnClickListener(v -> startActivity(new Intent(this, BatDauGhiAmActivity.class)));
+
         btnHinhAnh.setOnClickListener(v -> startActivity(new Intent(this, BatDauHinhAnhActivity.class)));
+
     }
 }

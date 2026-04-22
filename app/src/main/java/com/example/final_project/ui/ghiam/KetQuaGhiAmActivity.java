@@ -25,15 +25,11 @@ public class KetQuaGhiAmActivity extends AppCompatActivity {
         txtKetQuaTongHop = findViewById(R.id.txtKetQuaCuoiCung);
 
         Intent intent = getIntent();
-
         int labelAudio = intent.getIntExtra("label_voice", 0);
-        int scoreText = intent.getIntExtra("score_text", 2);
-        String resultText = intent.getStringExtra("result_text");
 
-        Log.d("FINAL_DEBUG", "labelAudio = " + labelAudio);
-        Log.d("FINAL_DEBUG", "scoreText = " + scoreText);
+        Log.d("FINAL_DEBUG", "labelAudio nhận được = " + labelAudio);
 
-        calculateAndDisplay(labelAudio, scoreText);
+        displayVoiceResult(labelAudio);
 
         findViewById(R.id.btnFinish).setOnClickListener(v -> {
             Intent i = new Intent(KetQuaGhiAmActivity.this, TrangChuActivity.class);
@@ -43,45 +39,25 @@ public class KetQuaGhiAmActivity extends AppCompatActivity {
         });
     }
 
-    private void calculateAndDisplay(int labelAudio, int scoreText) {
-        int scoreAudioEquivalent = (labelAudio == 1) ? 22 : 2;
-
-        int finalScore = (scoreText + scoreAudioEquivalent) / 2;
-
-        String levelFinal;
-        int color;
+    private void displayVoiceResult(int labelAudio) {
+        String resultTitle;
         String advice;
+        int color;
 
-        if (finalScore <= 4) {
-            levelFinal = "Bình thường";
-            color = android.R.color.holo_green_dark;
-            advice = "Tâm trạng ổn định. Hãy duy trì thói quen tích cực.";
-        }
-        else if (finalScore <= 9) {
-            levelFinal = "Nhẹ";
-            color = android.R.color.holo_blue_dark;
-            advice = "Bạn có dấu hiệu nhẹ. Hãy nghỉ ngơi và thư giãn.";
-        }
-        else if (finalScore <= 14) {
-            levelFinal = "Vừa phải";
-            color = android.R.color.holo_orange_dark;
-            advice = "Bạn nên chia sẻ với người thân.";
-        }
-        else if (finalScore <= 19) {
-            levelFinal = "Mức độ nghiêm trọng vừa phải";
-            color = android.R.color.holo_red_light;
-            advice = "Bạn nên gặp chuyên gia tâm lý.";
-        }
-        else {
-            levelFinal = "Nghiêm trọng";
+        if (labelAudio == 1) {
+            resultTitle = "CÓ DẤU HIỆU TRẦM CẢM";
             color = android.R.color.holo_red_dark;
-            advice = "Cần hỗ trợ y tế ngay.";
+            advice = "Phân tích giọng nói cho thấy các chỉ số liên quan đến trầm cảm. Bạn hãy thực hiện thêm bài trắc nghiệm để có kết quả chính xác nhất.";
+        } else {
+            resultTitle = "TÂM TRẠNG BÌNH THƯỜNG";
+            color = android.R.color.holo_green_dark;
+            advice = "Giọng nói của bạn hiện tại không cho thấy dấu hiệu trầm cảm. Hãy tiếp tục duy trì trạng thái tích cực này nhé!";
         }
 
-        txtKetQuaTongHop.setText("Kết quả: " + finalScore + " điểm - " + levelFinal);
+        txtKetQuaTongHop.setText(resultTitle);
         txtKetQuaTongHop.setTextColor(ContextCompat.getColor(this, color));
         txtMoTa.setText(advice);
 
-        DataManager.saveTextScore(this, finalScore);
+        DataManager.saveVoiceResult(this, labelAudio);
     }
 }
