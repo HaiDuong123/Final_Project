@@ -11,6 +11,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.example.final_project.R;
 import com.example.final_project.ui.trangchu.TrangChuActivity;
 
+import com.example.final_project.ui.ghiam.BatDauGhiAmActivity;
+import android.widget.Toast;
+
 public class KetQuaTracNghiemActivity extends AppCompatActivity {
 
     private TextView txtKetQua, txtLoiKhuyen, txtGoiYAmNhac;
@@ -34,11 +37,11 @@ public class KetQuaTracNghiemActivity extends AppCompatActivity {
 
         // Finish button
         btnKetThuc.setOnClickListener(v -> {
-            Intent intent = new Intent(
-                    KetQuaTracNghiemActivity.this,
-                    TrangChuActivity.class
-            );
+            Toast.makeText(this, "Chuyển sang kiểm tra giọng nói...", Toast.LENGTH_SHORT).show();
+
+            Intent intent = new Intent(KetQuaTracNghiemActivity.this, BatDauGhiAmActivity.class);
             startActivity(intent);
+
             finish();
         });
 

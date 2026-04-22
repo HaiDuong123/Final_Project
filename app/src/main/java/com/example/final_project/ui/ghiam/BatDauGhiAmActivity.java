@@ -20,29 +20,25 @@ public class BatDauGhiAmActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_batdau_ghiam);
 
-        // ánh xạ nút bắt đầu
         btnBatDau = findViewById(R.id.btn_batdauthuchienghiam);
 
-        // ánh xạ nút back
         btnBack = findViewById(R.id.btn_back);
 
-        // xử lý click bắt đầu
         btnBatDau.setOnClickListener(v -> {
             Intent intent = new Intent(
                     BatDauGhiAmActivity.this,
-                    TrangDauTienGhiAmActivity.class
+                    TrangTiepTheoGhiAmActivity.class
             );
             startActivity(intent);
         });
 
-        // xử lý click back
         btnBack.setOnClickListener(v -> {
             Intent intent = new Intent(
                     BatDauGhiAmActivity.this,
                     TrangChuActivity.class
             );
             startActivity(intent);
-            finish(); // đóng màn hiện tại
+            finish();
         });
     }
 }

@@ -29,9 +29,6 @@ public class TrangTiepTheoGhiAmActivity extends AppCompatActivity {
     private TextView txtCauHoi, txtThoiGian, txtKetQuaNoi;
     private ImageView btnVoice;
 
-    private int scoreText;
-    private String resultText;
-
     private AudioRecord audioRecord;
     private boolean isRecording = false;
     private File pcmFile;
@@ -53,12 +50,6 @@ public class TrangTiepTheoGhiAmActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_manhinhcho_ghiam_2);
-
-        scoreText = getIntent().getIntExtra("score_text", 2);
-        resultText = getIntent().getStringExtra("result_text");
-
-        Log.d("FLOW_DEBUG", "scoreText = " + scoreText);
-        Log.d("FLOW_DEBUG", "resultText = " + resultText);
 
         initViews();
         txtCauHoi.setText(question2);
@@ -176,12 +167,7 @@ public class TrangTiepTheoGhiAmActivity extends AppCompatActivity {
             return;
         }
 
-        Log.d("FLOW_DEBUG", "SEND scoreText = " + scoreText);
-
         Intent intent = new Intent(this, ChoKetQuaGhiAmActivity.class);
-
-        intent.putExtra("score_text", scoreText);
-        intent.putExtra("result_text", resultText);
 
         intent.putExtra("pcmPath", pcmFile.getAbsolutePath());
         intent.putExtra("duration", recordDuration);

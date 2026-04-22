@@ -6,32 +6,17 @@
     android:layout_height="match_parent"
     android:padding="24dp">
 
-    <!-- TOP BAR -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:gravity="center_vertical"
         android:layout_marginBottom="20dp">
-
-        <ImageView
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:src="@drawable/avatar"/>
-
-        <View
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="1dp"/>
-
-        <ImageView
-            android:layout_width="32dp"
-            android:layout_height="32dp"
-            android:src="@drawable/chuong"/>
+        <ImageView android:layout_width="48dp" android:layout_height="48dp" android:src="@drawable/avatar"/>
+        <View android:layout_width="0dp" android:layout_weight="1" android:layout_height="1dp"/>
+        <ImageView android:layout_width="32dp" android:layout_height="32dp" android:src="@drawable/chuong"/>
     </LinearLayout>
 
-
-    <!-- GREETING -->
     <TextView
         android:id="@+id/txtHello"
         android:text="Chào, User!"
@@ -40,7 +25,6 @@
         android:textStyle="bold"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"/>
-
 
     <TextView
         android:text="Hôm nay bạn cảm thấy thế nào?"
@@ -51,11 +35,10 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"/>
 
-
-    <!-- RESULT CARD -->
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="140dp"
+        android:layout_height="wrap_content"
+        android:minHeight="140dp"
         android:background="#22A06B"
         android:padding="20dp"
         android:layout_marginBottom="20dp"
@@ -77,8 +60,18 @@
             android:layout_marginTop="8dp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"/>
-    </LinearLayout>
 
+        <TextView
+            android:id="@+id/txtStatusNote"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:text="..."
+            android:textColor="#FFFFFF"
+            android:textSize="13sp"
+            android:textStyle="italic"
+            android:visibility="gone"/>
+    </LinearLayout>
 
     <TextView
         android:text="Chọn phương thức:"
@@ -89,8 +82,6 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"/>
 
-
-    <!-- ICON MENU -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -98,44 +89,17 @@
         android:gravity="center"
         android:layout_marginTop="20dp">
 
-        <!-- Ghi âm -->
         <LinearLayout
             android:layout_width="0dp"
             android:layout_weight="1"
             android:gravity="center"
             android:orientation="vertical"
             android:layout_height="wrap_content">
-
-            <ImageView
-                android:id="@+id/btn_ghiam"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:src="@drawable/mic"/>
-
-            <TextView
-                android:text="Ghi âm"
-                android:textColor="#2E3148"
-                android:textSize="15sp"
-                android:layout_marginTop="6dp"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
-        </LinearLayout>
-
-
-        <!-- Hình ảnh -->
-        <LinearLayout
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:gravity="center"
-            android:orientation="vertical"
-            android:layout_height="wrap_content">
-
             <ImageView
                 android:id="@+id/btn_hinhanh"
                 android:layout_width="48dp"
                 android:layout_height="48dp"
                 android:src="@drawable/image"/>
-
             <TextView
                 android:text="Hình ảnh"
                 android:textColor="#2E3148"
@@ -145,21 +109,17 @@
                 android:layout_height="wrap_content"/>
         </LinearLayout>
 
-
-        <!-- Trắc nghiệm -->
         <LinearLayout
             android:layout_width="0dp"
             android:layout_weight="1"
             android:gravity="center"
             android:orientation="vertical"
             android:layout_height="wrap_content">
-
             <ImageView
                 android:id="@+id/btn_tracnghiem"
                 android:layout_width="48dp"
                 android:layout_height="48dp"
                 android:src="@drawable/text"/>
-
             <TextView
                 android:text="Trắc nghiệm"
                 android:textColor="#2E3148"
@@ -170,5 +130,4 @@
         </LinearLayout>
 
     </LinearLayout>
-
 </LinearLayout>
