@@ -22,7 +22,8 @@ const AccountSchema = new mongoose.Schema({
     password: { type: String, required: true },
     email: String,
     finalScore: { type: Number, default: null },
-    level: { type: String, default: null }
+    level: { type: String, default: null },
+    lastTestTime: { type: String, default: null }
 })
 
 const Account = mongoose.model("accounts", AccountSchema)
@@ -165,13 +166,19 @@ app.post("/update-result", async (req, res) => {
             })
         }
 
+        // ⭐ LẤY THỜI GIAN HIỆN TẠI
+        const now = new Date().toLocaleString("vi-VN")
+
         const user = await Account.findOneAndUpdate(
             { username: username },
             {
                 finalScore: finalScore,
-                level: level
+                level: level,
+
+                // ⭐ THÊM DÒNG NÀY
+                lastTestTime: now
             },
-            { new: true } // update nếu có, chưa có field thì tự tạo
+            { new: true }
         )
 
         if (!user) {
@@ -194,7 +201,6 @@ app.post("/update-result", async (req, res) => {
         })
     }
 })
-
 // ================= TEST API =================
 app.get("/", (req, res) => {
     res.send("API is running 🚀")
