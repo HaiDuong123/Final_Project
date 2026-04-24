@@ -15,6 +15,7 @@ import com.example.final_project.data.model.ApiResponse;
 import com.example.final_project.data.network.ApiService;
 import com.example.final_project.data.network.RetrofitClient;
 import com.example.final_project.ui.trangchu.TrangChuActivity;
+import com.example.final_project.util.DataManager;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -83,6 +84,7 @@ public class DangNhapActivity extends AppCompatActivity {
                         Toast.makeText(DangNhapActivity.this,
                                 "Đăng nhập thành công",
                                 Toast.LENGTH_SHORT).show();
+                        DataManager.setCurrentUser(DangNhapActivity.this, user);
 
                         Intent intent = new Intent(
                                 DangNhapActivity.this,
