@@ -20,7 +20,9 @@ mongoose.connect(process.env.MONGO_URI)
 const AccountSchema = new mongoose.Schema({
     username: { type: String, required: true, unique: true },
     password: { type: String, required: true },
-    email: String
+    email: String,
+    finalScore: { type: Number, default: null },
+    level: { type: String, default: null }
 })
 
 const Account = mongoose.model("accounts", AccountSchema)
@@ -151,7 +153,47 @@ app.post("/change-password", async (req, res) => {
         })
     }
 })
+// ================= UPDATE RESULT =================
+app.post("/update-result", async (req, res) => {
+    try {
+        const { username, finalScore, level } = req.body
 
+        if (!username) {
+            return res.json({
+                ok: false,
+                message: "Thiếu username"
+            })
+        }
+
+        const user = await Account.findOneAndUpdate(
+            { username: username },
+            {
+                finalScore: finalScore,
+                level: level
+            },
+            { new: true } // update nếu có, chưa có field thì tự tạo
+        )
+
+        if (!user) {
+            return res.json({
+                ok: false,
+                message: "Không tìm thấy user"
+            })
+        }
+
+        res.json({
+            ok: true,
+            message: "Lưu kết quả thành công",
+            data: user
+        })
+
+    } catch (err) {
+        res.json({
+            ok: false,
+            message: err.message
+        })
+    }
+})
 
 // ================= TEST API =================
 app.get("/", (req, res) => {

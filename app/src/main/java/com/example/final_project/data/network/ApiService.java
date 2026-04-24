@@ -24,4 +24,6 @@ public interface ApiService {
     Call<ApiResponse> login(@Body Account account);
     @POST("/change-password")
     Call<ApiResponse> changePassword(@Body Map<String, String> body);
+    @POST("/update-result")
+    Call<ApiResponse> updateResult(@Body Map<String, Object> body);
 }

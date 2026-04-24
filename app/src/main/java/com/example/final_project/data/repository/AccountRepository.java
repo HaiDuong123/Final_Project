@@ -5,6 +5,8 @@ import com.example.final_project.data.model.ApiResponse;
 import com.example.final_project.data.network.ApiService;
 import com.example.final_project.data.network.RetrofitClient;
 
+import java.util.Map;
+
 import retrofit2.Call;
 
 public class AccountRepository {
@@ -24,5 +26,8 @@ public class AccountRepository {
 
     public Call<ApiResponse> login(Account account) {
         return apiService.login(account);
+    }
+    public Call<ApiResponse> updateResult(Map<String, Object> body) {
+        return apiService.updateResult(body);
     }
 }
