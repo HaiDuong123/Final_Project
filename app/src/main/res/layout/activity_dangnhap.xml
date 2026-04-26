@@ -17,9 +17,8 @@
             android:orientation="vertical"
             android:padding="20dp">
 
-            <!-- TITLE CARD -->
+            <!-- TITLE -->
             <LinearLayout
-                android:id="@+id/rjivl92wapa_rl"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="@drawable/result_card"
@@ -28,7 +27,6 @@
                 android:layout_marginBottom="25dp">
 
                 <TextView
-                    android:id="@+id/rndysueik9qs"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="Bắt đầu"
@@ -41,87 +39,39 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Đăng ký hoặc đăng nhập để tiếp tục sử dụng ứng dụng."
+                    android:text="Đăng nhập bằng tài khoản để tiếp tục."
                     android:textColor="#6C7A92"
-                    android:textSize="16sp"/>
+                    android:textSize="16sp"
+                    android:gravity="center"
+                    />
 
             </LinearLayout>
 
 
-            <!-- SOCIAL LOGIN -->
+            <!-- LOGIN BUTTON -->
             <LinearLayout
-                android:id="@+id/rzdp8dvyier"
+                android:id="@+id/btn_dangnhap"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:layout_marginBottom="20dp">
-
-                <!-- FACEBOOK -->
-                <LinearLayout
-                    android:id="@+id/rq8m1chx7akp"
-                    android:layout_width="match_parent"
-                    android:layout_height="55dp"
-                    android:background="@drawable/result_card"
-                    android:gravity="center"
-                    android:layout_marginBottom="14dp"
-                    android:clickable="true"
-                    android:focusable="true">
-
-                    <TextView
-                        android:id="@+id/r9ne7oei56jl"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Đăng nhập bằng Facebook"
-                        android:textColor="#1F2A44"
-                        android:textSize="16sp"
-                        android:textStyle="bold"/>
-
-                </LinearLayout>
-
-
-                <!-- GOOGLE -->
-                <LinearLayout
-                    android:id="@+id/rah1z6ctyps5"
-                    android:layout_width="match_parent"
-                    android:layout_height="55dp"
-                    android:background="@drawable/result_card"
-                    android:gravity="center"
-                    android:clickable="true"
-                    android:focusable="true">
-
-                    <TextView
-                        android:id="@+id/r8znajs3dhgk"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Đăng nhập bằng Google"
-                        android:textColor="#1F2A44"
-                        android:textSize="16sp"
-                        android:textStyle="bold"/>
-
-                </LinearLayout>
-
-            </LinearLayout>
-
-
-            <!-- LOGIN LINK -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="55dp"
+                android:background="@drawable/result_card"
                 android:gravity="center"
-                android:layout_marginBottom="20dp">
+                android:layout_marginBottom="20dp"
+                android:clickable="true"
+                android:focusable="true">
 
                 <TextView
-                    android:id="@+id/btn_dangnhap"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Bạn đã có tài khoản? Đăng nhập"
-                    android:textColor="#4C6FFF"
-                    android:textSize="15sp"/>
+                    android:text="Đăng nhập"
+                    android:textColor="#1F2A44"
+                    android:textSize="16sp"
+                    android:textStyle="bold"/>
 
             </LinearLayout>
 
 
-            <!-- SPACER (đẩy nút xuống dưới) -->
+
+            <!-- SPACER -->
             <View
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
@@ -130,7 +80,7 @@
 
             <!-- REGISTER BUTTON -->
             <LinearLayout
-                android:id="@+id/rgijk6x1lbug"
+                android:id="@+id/btn_dangky"
                 android:layout_width="match_parent"
                 android:layout_height="56dp"
                 android:background="@drawable/button_start"
@@ -139,7 +89,6 @@
                 android:focusable="true">
 
                 <TextView
-                    android:id="@+id/btn_dangky"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Tạo tài khoản"

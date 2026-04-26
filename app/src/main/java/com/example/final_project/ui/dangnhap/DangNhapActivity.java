@@ -29,6 +29,7 @@ public class DangNhapActivity extends AppCompatActivity {
     private LinearLayout btnLogin;
     private TextView txtQuenMatKhau;
     private ImageView togglePassword;
+    private ImageView btnBack;
 
     private ApiService apiService;
 
@@ -61,6 +62,12 @@ public class DangNhapActivity extends AppCompatActivity {
         });
 
         setupTogglePassword();
+
+        btnBack = findViewById(R.id.btn_back);
+
+        btnBack.setOnClickListener(v -> {
+            finish(); // quay lại màn trước (ChonDangNhapActivity)
+        });
     }
 
     // =========================

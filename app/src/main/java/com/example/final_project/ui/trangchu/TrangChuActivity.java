@@ -4,6 +4,9 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Bundle;
+import android.text.SpannableString;
+import android.text.Spanned;
+import android.text.style.AbsoluteSizeSpan;
 import android.widget.ImageView;
 import android.widget.PopupMenu;
 import android.widget.TextView;
@@ -124,30 +127,50 @@ public class TrangChuActivity extends AppCompatActivity {
     // FORMAT STRING DATE
     // =========================
     private String formatDate(String raw) {
+        if (raw == null) return "";
+
         try {
-            // raw: "26/4/2026, 10:30:20"
-            String[] parts = raw.split(",");
-            return parts[0]; // lấy ngày
+            String[] parts = raw.split(" ");
+            return parts[parts.length - 1]; // ✅ lấy phần cuối (ngày)
         } catch (Exception e) {
             return raw;
         }
     }
-
     // =========================
     // HIỂN THỊ SERVER
     // =========================
     private void showServerResult() {
 
-        String result = serverScore + " điểm - " + serverLevel;
+        String line1 = serverScore + " điểm - " + serverLevel;
+        String line2 = "";
 
         if (lastTestTime != null) {
-            result += "\nNgày test: " + formatDate(lastTestTime);
+            line2 = "Ngày test: " + formatDate(lastTestTime);
         }
 
-        txtFinalResult.setText(result);
+        String fullText = line1 + "\n" + line2;
+
+        SpannableString spannable = new SpannableString(fullText);
+
+        // dòng 1: to
+        spannable.setSpan(
+                new AbsoluteSizeSpan(22, true),
+                0,
+                line1.length(),
+                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+        );
+
+        // dòng 2: nhỏ hơn
+        spannable.setSpan(
+                new AbsoluteSizeSpan(14, true),
+                line1.length(),
+                fullText.length(),
+                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+        );
+
+        txtFinalResult.setText(spannable);
         txtFinalResult.setTextColor(Color.WHITE);
         txtFinalResult.setTypeface(null, Typeface.BOLD);
-        txtFinalResult.setTextSize(22);
     }
 
     // =========================
@@ -178,10 +201,34 @@ public class TrangChuActivity extends AppCompatActivity {
         else if (finalScore <= 19) level = "Nặng vừa";
         else level = "Nặng";
 
-        String result = finalScore + " điểm - " + level +
-                "\nNgày test: " + formatDate(new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(new Date()));
+        String line1 = finalScore + " điểm - " + level;
 
-        txtFinalResult.setText(result);
+        String line2 = "Ngày test: " +
+                new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(new Date());
+
+        String fullText = line1 + "\n" + line2;
+
+        SpannableString spannable = new SpannableString(fullText);
+
+// dòng 1 (to)
+        spannable.setSpan(
+                new AbsoluteSizeSpan(22, true),
+                0,
+                line1.length(),
+                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+        );
+
+// dòng 2 (nhỏ)
+        spannable.setSpan(
+                new AbsoluteSizeSpan(14, true),
+                line1.length(),
+                fullText.length(),
+                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+        );
+
+        txtFinalResult.setText(spannable);
+        txtFinalResult.setTextColor(Color.WHITE);
+        txtFinalResult.setTypeface(null, Typeface.BOLD);
         txtFinalResult.setTextColor(Color.WHITE);
         txtFinalResult.setTypeface(null, Typeface.BOLD);
 

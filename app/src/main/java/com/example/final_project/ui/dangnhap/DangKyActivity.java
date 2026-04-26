@@ -24,6 +24,7 @@ public class DangKyActivity extends AppCompatActivity {
     private EditText username, password, email;
     private LinearLayout btnRegister;
     private ImageView togglePassword;
+    private ImageView btnBack;
 
     private AccountRepository repository;
 
@@ -47,6 +48,11 @@ public class DangKyActivity extends AppCompatActivity {
         btnRegister.setOnClickListener(v -> register());
 
         setupTogglePassword();
+        btnBack = findViewById(R.id.btn_back);
+
+        btnBack.setOnClickListener(v -> {
+            finish(); // quay lại màn trước (ChonDangNhapActivity)
+        });
     }
 
     // =========================
