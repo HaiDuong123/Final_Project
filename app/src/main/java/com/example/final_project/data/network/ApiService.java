@@ -28,5 +28,5 @@ public interface ApiService {
     @POST("/update-result")
     Call<ApiResponse> updateResult(@Body Map<String, Object> body);
     @GET("/user/{username}")
-    Call<Account> getUser(@Path("username") String username);
+    Call<ApiResponse> getUser(@Path("username") String username);
 }

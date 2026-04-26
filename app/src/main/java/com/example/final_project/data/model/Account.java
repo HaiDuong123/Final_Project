@@ -10,7 +10,7 @@ public class Account {
 
     private Integer finalScore;
     private String level;
-    private Date lastTestTime;
+    private String lastTestTime;
     public Account(String username, String password, String email) {
         this.username = username;
         this.password = password;
@@ -43,7 +43,7 @@ public class Account {
     public void setLevel(String level) {
         this.level = level;
     }
-    public Date getLastTestTime() {
+    public String getLastTestTime() {
         return lastTestTime;
     }
 }

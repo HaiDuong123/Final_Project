@@ -4,7 +4,6 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Bundle;
-import android.view.MenuItem;
 import android.widget.ImageView;
 import android.widget.PopupMenu;
 import android.widget.TextView;
@@ -18,6 +17,7 @@ import com.example.final_project.util.DataManager;
 
 import com.example.final_project.data.repository.AccountRepository;
 import com.example.final_project.data.model.Account;
+import com.example.final_project.data.model.ApiResponse;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -31,9 +31,7 @@ import retrofit2.Response;
 
 public class TrangChuActivity extends AppCompatActivity {
 
-    private ImageView btnTracNghiem, btnHinhAnh;
-    private ImageView imgAvatar;
-
+    private ImageView btnTracNghiem, btnHinhAnh, imgAvatar;
     private TextView txtHello, txtFinalResult;
 
     private String username;
@@ -41,7 +39,7 @@ public class TrangChuActivity extends AppCompatActivity {
 
     private Integer serverScore = null;
     private String serverLevel = null;
-    private Date lastTestTime = null;
+    private String lastTestTime = null; // ✅ FIX STRING
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -80,24 +78,32 @@ public class TrangChuActivity extends AppCompatActivity {
     }
 
     // =========================
-    // LOAD USER FROM MONGO
+    // LOAD USER
     // =========================
     private void loadUserFromServer() {
 
-        repo.getUser(username).enqueue(new Callback<Account>() {
+        repo.getUser(username).enqueue(new Callback<ApiResponse>() {
             @Override
-            public void onResponse(Call<Account> call, Response<Account> response) {
+            public void onResponse(Call<ApiResponse> call, Response<ApiResponse> response) {
 
                 if (response.isSuccessful() && response.body() != null) {
 
-                    Account user = response.body();
+                    ApiResponse res = response.body();
 
-                    serverScore = user.getFinalScore();
-                    serverLevel = user.getLevel();
-                    lastTestTime = user.getLastTestTime(); // ⭐ LẤY TIME
+                    if (res.isOk() && res.getData() != null) {
 
-                    if (serverScore != null && serverLevel != null) {
-                        showServerResult();
+                        Account user = res.getData();
+
+                        serverScore = user.getFinalScore();
+                        serverLevel = user.getLevel();
+                        lastTestTime = user.getLastTestTime(); // ✅ STRING
+
+                        if (serverScore != null && serverLevel != null) {
+                            showServerResult();
+                        } else {
+                            calculateAndSaveLocalResult();
+                        }
+
                     } else {
                         calculateAndSaveLocalResult();
                     }
@@ -108,23 +114,27 @@ public class TrangChuActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onFailure(Call<Account> call, Throwable t) {
+            public void onFailure(Call<ApiResponse> call, Throwable t) {
                 calculateAndSaveLocalResult();
             }
         });
     }
 
     // =========================
-    // FORMAT DATE
+    // FORMAT STRING DATE
     // =========================
-    private String formatDate(Date date) {
-        if (date == null) return "";
-        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
-        return sdf.format(date);
+    private String formatDate(String raw) {
+        try {
+            // raw: "26/4/2026, 10:30:20"
+            String[] parts = raw.split(",");
+            return parts[0]; // lấy ngày
+        } catch (Exception e) {
+            return raw;
+        }
     }
 
     // =========================
-    // HIỂN THỊ SERVER RESULT
+    // HIỂN THỊ SERVER
     // =========================
     private void showServerResult() {
 
@@ -141,7 +151,7 @@ public class TrangChuActivity extends AppCompatActivity {
     }
 
     // =========================
-    // TÍNH LOCAL + LƯU SERVER
+    // LOCAL CALC
     // =========================
     private void calculateAndSaveLocalResult() {
 
@@ -169,7 +179,7 @@ public class TrangChuActivity extends AppCompatActivity {
         else level = "Nặng";
 
         String result = finalScore + " điểm - " + level +
-                "\nNgày test: " + formatDate(new Date());
+                "\nNgày test: " + formatDate(new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(new Date()));
 
         txtFinalResult.setText(result);
         txtFinalResult.setTextColor(Color.WHITE);
@@ -188,15 +198,11 @@ public class TrangChuActivity extends AppCompatActivity {
         body.put("finalScore", finalScore);
         body.put("level", level);
 
-        repo.updateResult(body).enqueue(new Callback<com.example.final_project.data.model.ApiResponse>() {
+        repo.updateResult(body).enqueue(new Callback<ApiResponse>() {
             @Override
-            public void onResponse(Call<com.example.final_project.data.model.ApiResponse> call,
-                                   Response<com.example.final_project.data.model.ApiResponse> response) {
-            }
-
+            public void onResponse(Call<ApiResponse> call, Response<ApiResponse> response) {}
             @Override
-            public void onFailure(Call<com.example.final_project.data.model.ApiResponse> call, Throwable t) {
-            }
+            public void onFailure(Call<ApiResponse> call, Throwable t) {}
         });
     }
 
@@ -215,9 +221,6 @@ public class TrangChuActivity extends AppCompatActivity {
         });
     }
 
-    // =========================
-    // POPUP AVATAR
-    // =========================
     private void setupAvatarMenu() {
 
         imgAvatar.setOnClickListener(v -> {
