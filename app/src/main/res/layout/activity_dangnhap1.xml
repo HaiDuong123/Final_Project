@@ -133,13 +133,11 @@
                         android:inputType="textPassword"
                         android:background="@null"/>
 
-                    <TextView
-                        android:id="@+id/rd4x5hs4wag"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:textColor="#34C559"
-                        android:textSize="11sp"
-                        android:text="Mạnh"/>
+                    <ImageView
+                        android:id="@+id/toggle_password"
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:src="@drawable/hidepass"/>
                 </LinearLayout>
 
             </LinearLayout>

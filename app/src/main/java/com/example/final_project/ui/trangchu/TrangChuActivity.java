@@ -4,7 +4,9 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Bundle;
+import android.view.MenuItem;
 import android.widget.ImageView;
+import android.widget.PopupMenu;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -17,7 +19,10 @@ import com.example.final_project.util.DataManager;
 import com.example.final_project.data.repository.AccountRepository;
 import com.example.final_project.data.model.Account;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 import retrofit2.Call;
@@ -27,6 +32,8 @@ import retrofit2.Response;
 public class TrangChuActivity extends AppCompatActivity {
 
     private ImageView btnTracNghiem, btnHinhAnh;
+    private ImageView imgAvatar;
+
     private TextView txtHello, txtFinalResult;
 
     private String username;
@@ -34,6 +41,7 @@ public class TrangChuActivity extends AppCompatActivity {
 
     private Integer serverScore = null;
     private String serverLevel = null;
+    private Date lastTestTime = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,6 +60,7 @@ public class TrangChuActivity extends AppCompatActivity {
         txtHello.setText("Chào, " + username);
 
         setupNavigation();
+        setupAvatarMenu();
 
         loadUserFromServer();
     }
@@ -61,6 +70,7 @@ public class TrangChuActivity extends AppCompatActivity {
         btnHinhAnh = findViewById(R.id.btn_hinhanh);
         txtHello = findViewById(R.id.txtHello);
         txtFinalResult = findViewById(R.id.txtFinalResult);
+        imgAvatar = findViewById(R.id.imgAvatar);
     }
 
     @Override
@@ -84,6 +94,7 @@ public class TrangChuActivity extends AppCompatActivity {
 
                     serverScore = user.getFinalScore();
                     serverLevel = user.getLevel();
+                    lastTestTime = user.getLastTestTime(); // ⭐ LẤY TIME
 
                     if (serverScore != null && serverLevel != null) {
                         showServerResult();
@@ -104,10 +115,26 @@ public class TrangChuActivity extends AppCompatActivity {
     }
 
     // =========================
+    // FORMAT DATE
+    // =========================
+    private String formatDate(Date date) {
+        if (date == null) return "";
+        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
+        return sdf.format(date);
+    }
+
+    // =========================
     // HIỂN THỊ SERVER RESULT
     // =========================
     private void showServerResult() {
-        txtFinalResult.setText(serverScore + " điểm - " + serverLevel);
+
+        String result = serverScore + " điểm - " + serverLevel;
+
+        if (lastTestTime != null) {
+            result += "\nNgày test: " + formatDate(lastTestTime);
+        }
+
+        txtFinalResult.setText(result);
         txtFinalResult.setTextColor(Color.WHITE);
         txtFinalResult.setTypeface(null, Typeface.BOLD);
         txtFinalResult.setTextSize(22);
@@ -141,7 +168,10 @@ public class TrangChuActivity extends AppCompatActivity {
         else if (finalScore <= 19) level = "Nặng vừa";
         else level = "Nặng";
 
-        txtFinalResult.setText(finalScore + " điểm - " + level);
+        String result = finalScore + " điểm - " + level +
+                "\nNgày test: " + formatDate(new Date());
+
+        txtFinalResult.setText(result);
         txtFinalResult.setTextColor(Color.WHITE);
         txtFinalResult.setTypeface(null, Typeface.BOLD);
 
@@ -149,7 +179,7 @@ public class TrangChuActivity extends AppCompatActivity {
     }
 
     // =========================
-    // UPDATE SERVER (REPLACE)
+    // UPDATE SERVER
     // =========================
     private void saveResultToServer(int finalScore, String level) {
 
@@ -162,19 +192,14 @@ public class TrangChuActivity extends AppCompatActivity {
             @Override
             public void onResponse(Call<com.example.final_project.data.model.ApiResponse> call,
                                    Response<com.example.final_project.data.model.ApiResponse> response) {
-                // ok ignore
             }
 
             @Override
             public void onFailure(Call<com.example.final_project.data.model.ApiResponse> call, Throwable t) {
-                // ignore
             }
         });
     }
 
-    // =========================
-    // NAVIGATION
-    // =========================
     private void setupNavigation() {
 
         btnTracNghiem.setOnClickListener(v -> {
@@ -188,5 +213,41 @@ public class TrangChuActivity extends AppCompatActivity {
             intent.putExtra("username", username);
             startActivity(intent);
         });
+    }
+
+    // =========================
+    // POPUP AVATAR
+    // =========================
+    private void setupAvatarMenu() {
+
+        imgAvatar.setOnClickListener(v -> {
+
+            PopupMenu popupMenu = new PopupMenu(
+                    TrangChuActivity.this,
+                    imgAvatar,
+                    0,
+                    0,
+                    R.style.PopupMenuStyle
+            );
+
+            popupMenu.getMenuInflater().inflate(R.menu.menu_avatar, popupMenu.getMenu());
+
+            popupMenu.setOnMenuItemClickListener(item -> {
+                if (item.getItemId() == R.id.action_logout) {
+                    logout();
+                    return true;
+                }
+                return false;
+            });
+
+            popupMenu.show();
+        });
+    }
+
+    private void logout() {
+        Intent intent = new Intent(this,
+                com.example.final_project.ui.dangnhap.DangNhapActivity.class);
+        startActivity(intent);
+        finish();
     }
 }

@@ -15,7 +15,7 @@ public interface ApiService {
 
     // API Register
     @POST("/register")
-    Call<Account> register(@Body Account account);
+    Call<ApiResponse> register(@Body Account account);
 
     // API Get Questions
     @GET("questions")

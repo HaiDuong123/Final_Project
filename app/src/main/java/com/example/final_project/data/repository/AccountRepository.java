@@ -20,7 +20,7 @@ public class AccountRepository {
                 .create(ApiService.class);
     }
 
-    public Call<Account> register(Account account) {
+    public Call<ApiResponse> register(Account account) {
         return apiService.register(account);
     }
 

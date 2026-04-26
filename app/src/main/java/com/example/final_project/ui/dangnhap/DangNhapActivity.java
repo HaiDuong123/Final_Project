@@ -2,7 +2,9 @@ package com.example.final_project.ui.dangnhap;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.InputType;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -25,9 +27,12 @@ public class DangNhapActivity extends AppCompatActivity {
 
     private EditText username, userpassword;
     private LinearLayout btnLogin;
-    private TextView txtQuenMatKhau; // 🔥 thêm
+    private TextView txtQuenMatKhau;
+    private ImageView togglePassword;
 
     private ApiService apiService;
+
+    private boolean isPasswordVisible = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,8 +42,9 @@ public class DangNhapActivity extends AppCompatActivity {
         username = findViewById(R.id.user_name);
         userpassword = findViewById(R.id.user_password);
         btnLogin = findViewById(R.id.btn_login);
+        txtQuenMatKhau = findViewById(R.id.txtquenmatkhau);
 
-        txtQuenMatKhau = findViewById(R.id.txtquenmatkhau); // 🔥 ánh xạ
+        togglePassword = findViewById(R.id.toggle_password);
 
         apiService = RetrofitClient
                 .getInstance()
@@ -46,7 +52,6 @@ public class DangNhapActivity extends AppCompatActivity {
 
         btnLogin.setOnClickListener(v -> login());
 
-        // 🔥 click quên mật khẩu
         txtQuenMatKhau.setOnClickListener(v -> {
             Intent intent = new Intent(
                     DangNhapActivity.this,
@@ -54,8 +59,32 @@ public class DangNhapActivity extends AppCompatActivity {
             );
             startActivity(intent);
         });
+
+        setupTogglePassword();
     }
 
+    // =========================
+    // HIDE / UNHIDE PASSWORD
+    // =========================
+    private void setupTogglePassword() {
+        togglePassword.setOnClickListener(v -> {
+
+            if (isPasswordVisible) {
+                userpassword.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+            } else {
+                userpassword.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD);
+            }
+
+            // giữ con trỏ ở cuối
+            userpassword.setSelection(userpassword.getText().length());
+
+            isPasswordVisible = !isPasswordVisible;
+        });
+    }
+
+    // =========================
+    // LOGIN
+    // =========================
     private void login() {
 
         String user = username.getText().toString().trim();
@@ -84,6 +113,8 @@ public class DangNhapActivity extends AppCompatActivity {
                         Toast.makeText(DangNhapActivity.this,
                                 "Đăng nhập thành công",
                                 Toast.LENGTH_SHORT).show();
+
+                        // lưu user hiện tại
                         DataManager.setCurrentUser(DangNhapActivity.this, user);
 
                         Intent intent = new Intent(

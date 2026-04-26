@@ -12,7 +12,11 @@
         android:orientation="horizontal"
         android:gravity="center_vertical"
         android:layout_marginBottom="20dp">
-        <ImageView android:layout_width="48dp" android:layout_height="48dp" android:src="@drawable/avatar"/>
+        <ImageView
+            android:id="@+id/imgAvatar"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:src="@drawable/avatar"/>
         <View android:layout_width="0dp" android:layout_weight="1" android:layout_height="1dp"/>
     </LinearLayout>
 

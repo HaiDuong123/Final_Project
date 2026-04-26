@@ -1,5 +1,7 @@
 package com.example.final_project.data.model;
 
+import java.util.Date;
+
 public class Account {
 
     private String username;
@@ -8,6 +10,7 @@ public class Account {
 
     private Integer finalScore;
     private String level;
+    private Date lastTestTime;
     public Account(String username, String password, String email) {
         this.username = username;
         this.password = password;
@@ -39,5 +42,8 @@ public class Account {
 
     public void setLevel(String level) {
         this.level = level;
+    }
+    public Date getLastTestTime() {
+        return lastTestTime;
     }
 }
